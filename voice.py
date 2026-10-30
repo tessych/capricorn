@@ -131,6 +131,10 @@ class Listener(threading.Thread):
 
     def process(self, data):
         """Усиление и шумовой порог для блока звука int16. Заодно обновляет self.level."""
+        # Fix: guard against empty audio chunks
+        if not data:
+            self.level = 0.0
+            return b""
         import numpy as np
         x = np.frombuffer(data, np.int16).astype(np.float32)
         if self.gain != 1.0:
@@ -554,10 +558,19 @@ class Speaker:
             return dst
         except Exception:
             log.exception("Обработка голоса не удалась, говорю чистым голосом")
-            if len(parts) == 1:
-                return parts[0]
-            asyncio.run(edge_tts.Communicate(text, self.voice, rate=self.rate, pitch=self.pitch).save(self.path))
+            if len(parts) == 1 and os.path.isfile(parts[0]):
+                shutil.copyfile(parts[0], self.path)
+            else:
+                asyncio.run(edge_tts.Communicate(text, self.voice, rate=self.rate, pitch=self.pitch).save(self.path))
             return self.path
+        finally:
+            # Fix: clean up intermediate edge-tts part files to prevent %TEMP% leaks
+            for f in parts:
+                try:
+                    if f != self.path and os.path.isfile(f):
+                        os.remove(f)
+                except OSError:
+                    pass
 
     # ---------- кэш: повторяющиеся фразы («Листаю», «Открываю ютуб») звучат сразу, без сервера ----------
     def _cache_path(self, text):

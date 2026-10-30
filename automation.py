@@ -8,6 +8,11 @@ from ctypes import wintypes
 
 log = logging.getLogger("capri")
 u = ctypes.windll.user32
+# Fix: declare 64-bit handle return types to avoid pointer truncation on 64-bit Windows
+u.GetForegroundWindow.restype = wintypes.HWND
+u.WindowFromPoint.restype = wintypes.HWND
+u.GetAncestor.restype = wintypes.HWND
+u.GetWindow.restype = wintypes.HWND
 
 # ---------------- ввод текста ----------------
 

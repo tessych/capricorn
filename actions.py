@@ -153,7 +153,8 @@ BROWSER_WORDS = [
 BROWSER_NAMES = {"chrome": "Google Chrome", "yandex": "Яндекс Браузер", "opera": "Opera", "firefox": "Firefox",
                  "edge": "Edge", "brave": "Brave", "vivaldi": "Vivaldi"}
 # «… в хроме», «… через яндекс браузер», «… в браузере опера» — только в конце фразы
-BROWSER_SUFFIX = re.compile(r"\s+(в|через)\s+(браузер\w*\s+)?(?P<b>" + "|".join(p for p, _ in BROWSER_WORDS)
+# Fix: wrap each pattern in non-capturing group so suffix applies to all alternatives
+BROWSER_SUFFIX = re.compile(r"\s+(в|через)\s+(браузер\w*\s+)?(?P<b>" + "|".join(rf"(?:{p})" for p, _ in BROWSER_WORDS)
                             + r")(\s+браузер\w*)?$")
 
 
@@ -1759,7 +1760,8 @@ class Actions:
         top_name, (top_score, _) = ranked[0]
         close = [kv for kv in ranked[1:] if top_score - kv[1][0] < 0.1]
         if top_score < 1.0 and close:  # несколько похожих — спрашиваем, что закрыть
-            self.choice = [(n, (lambda procs=procs, n=n: self._kill(n, procs, force))) for n, (_, procs) in
+            # Fix: explicitly bind force in closure argument
+            self.choice = [(n, (lambda procs=procs, n=n, f=force: self._kill(n, procs, f))) for n, (_, procs) in
                            [ranked[0]] + close[:2]]
             ords = ["первое", "второе", "третье"]
             listed = ", ".join(f"{ords[i]} — {n}" for i, (n, _) in enumerate(self.choice))
