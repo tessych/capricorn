@@ -960,6 +960,9 @@ class Actions:
             (UPDATES_RE, self.updates),
             (REPLY_RE, self.reply_cmd),
             (FORGET_REPLY_RE, self.forget_reply_cmd),
+            (r"^(установи|сохрани|запиши|поставь) (апи |api )?ключ (дипсик|дипсика|deepseek) (?P<k>\S+)$", self.deepseek_set_key),
+            (r"^(удали|убери|сотри|очисти) (апи |api )?ключ (дипсик|дипсика|deepseek)$", self.deepseek_del_key),
+            (r"^(какой|проверь|покажи) (апи |api )?ключ (дипсик|дипсика|deepseek)$", self.deepseek_info_key),
             (r"помаши|помахай|махни|помаши ручкой|поздоровайся", self.wave),
             (r"погуляй|прогуляйся|пройдись|прогулк", self.roam),
             (r"что ты (умеешь|можешь)|как\w* (у тебя )?команд|(назови|перечисли|скажи) (\S+ )?команд|"
@@ -1540,6 +1543,36 @@ class Actions:
                 time.sleep(2.5 if kind in ("youtube", "browser") else 0.4)  # сайту нужно загрузиться
                 in_search = False
         return Reply(" ".join(said) if said else line("done"))
+
+    def deepseek_set_key(self, c, m):
+        key = m.group("k").strip()
+        self.cfg["deepseek_api_key"] = key
+        try:
+            from main import save_setting
+            save_setting("deepseek_api_key", key)
+        except Exception:
+            pass
+        if hasattr(self, "deepseek") and self.deepseek:
+            self.deepseek.set_key(key)
+        return Reply("Ключ DeepSeek сохранён.")
+
+    def deepseek_del_key(self, c, m):
+        self.cfg["deepseek_api_key"] = ""
+        try:
+            from main import save_setting
+            save_setting("deepseek_api_key", "")
+        except Exception:
+            pass
+        if hasattr(self, "deepseek") and self.deepseek:
+            self.deepseek.set_key("")
+        return Reply("Ключ DeepSeek удалён.")
+
+    def deepseek_info_key(self, c, m):
+        k = self.cfg.get("deepseek_api_key", "")
+        if not k:
+            return Reply("Ключ DeepSeek не задан.")
+        tail = k[-4:] if len(k) >= 4 else k
+        return Reply(f"Ключ DeepSeek задан, оканчивается на {tail}.")
 
     def help(self, c, m):
         return Reply(line("help"))

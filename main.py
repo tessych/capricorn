@@ -40,6 +40,7 @@ try:
 
     from actions import CAPRI_URL, Actions, Reply
     from ai import AI
+    from deepseek import DeepSeekAI
     from local_ai import LocalAI
     from persona import LINES, gendered, line, set_user
     from avatar import Avatar
@@ -56,6 +57,8 @@ DEFAULTS = {
     "enable_ai": False,
     "local_ai": True,
     "local_model": "qwen3:8b",
+    "deepseek_api_key": "",
+    "deepseek_model": "deepseek-chat",
     "barge_in": True,
     "mic_device": None,
     "chatter": True,
@@ -262,6 +265,7 @@ class Capri(QObject):
         self.wake_re = re.compile(r"(^|\s)(" + "|".join(map(re.escape, words)) + r")(?=\s|$|[,.!?])",
                                   re.IGNORECASE)
         self.ai = AI(cfg)
+        self.deepseek = DeepSeekAI(cfg)
         self.local = LocalAI(cfg) if cfg.get("local_ai") else None
         if self.local:
             self.local.on_model_change = self._remember_model
@@ -269,6 +273,7 @@ class Capri(QObject):
         self.config_mtime = self._config_mtime()
         self.zapret_checked = False  # предлагали ли уже исправить zapret в этом сеансе
         self.actions.local = self.local
+        self.actions.deepseek = self.deepseek
         self.speaker = Speaker(cfg)
         self.jobs = queue.Queue()
         self.awake_until = 0.0
@@ -444,6 +449,15 @@ class Capri(QObject):
             save_setting(key, value)
         apply_user(self.cfg)
         log.info("Обращение: %s, %s", user_display_name(self.cfg) or "без имени", gender)
+
+    def set_deepseek_key(self, key):
+        """Установить, заменить или удалить (если пусто) ключ DeepSeek API."""
+        key = (key or "").strip()
+        self.cfg["deepseek_api_key"] = key
+        save_setting("deepseek_api_key", key)
+        if self.deepseek:
+            self.deepseek.set_key(key)
+        log.info("Ключ DeepSeek %s", "сохранён" if key else "удалён")
 
     def set_chatter(self, on):
         """Галочка в трее: появляется ли Капри сама (поболтать, погулять по экрану). Сразу и запоминается."""
@@ -631,7 +645,10 @@ class Capri(QObject):
         if reply is not None and reply.action in ("mic_info", "mic_next"):
             reply = self.mic_command(reply.action)
         if reply is None:
-            if self.cfg.get("enable_ai") and self.ai.available:
+            # Fix: query DeepSeek if configured, then Claude, then local model
+            if self.deepseek and self.deepseek.available:
+                reply = Reply(self.deepseek.ask(cmd), "answer")
+            elif self.cfg.get("enable_ai") and self.ai.available:
                 reply = Reply(self.ai.ask(cmd), "answer")
             else:
                 answer = self.local.ask(cmd) if self.local else None
@@ -777,12 +794,17 @@ def main():
         from profile_dialog import ProfileDialog
         show_window("profile", lambda: ProfileDialog(capri))
 
+    def open_deepseek():
+        from deepseek_dialog import DeepSeekDialog
+        show_window("deepseek", lambda: DeepSeekDialog(capri))
+
     menu = QMenu()
     for title, fn in (("Позвать Капри", capri.call_from_click),
                       ("Замолчать", capri.interrupt),
                       ("Написать команду…", ask_text),
                       ("Мои сайты, программы и ответы…", open_entries),
                       ("Как ко мне обращаться…", open_profile),
+                      ("Ключ DeepSeek API…", open_deepseek),
                       ("Проверить ПК", lambda: capri.text_command("проверь компьютер")),
                       ("Спрятать", avatar.vanish),
                       ("MIC", None),
