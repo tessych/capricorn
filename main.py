@@ -645,9 +645,9 @@ class Capri(QObject):
         if reply is not None and reply.action in ("mic_info", "mic_next"):
             reply = self.mic_command(reply.action)
         if reply is None:
-            # Fix: query DeepSeek if configured, then Claude, then local model
+            # Fix: query DeepSeek with tool support if configured, then Claude, then local model
             if self.deepseek and self.deepseek.available:
-                reply = Reply(self.deepseek.ask(cmd), "answer")
+                reply = Reply(self.deepseek.ask(cmd, actions=self.actions), "answer")
             elif self.cfg.get("enable_ai") and self.ai.available:
                 reply = Reply(self.ai.ask(cmd), "answer")
             else:

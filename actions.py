@@ -8,6 +8,7 @@ import os
 import random
 import re
 import subprocess
+import sys
 import threading
 import time
 import urllib.parse
@@ -22,7 +23,7 @@ import media
 from persona import line
 
 log = logging.getLogger("capri")
-NO_WINDOW = 0x08000000
+NO_WINDOW = 0x08000000 if sys.platform == "win32" else 0
 
 
 @dataclass
@@ -2000,5 +2001,65 @@ class Actions:
             return
         try:
             os.startfile(target)
-        except OSError:
+        except (AttributeError, OSError):
             subprocess.Popen(target, shell=True, creationflags=NO_WINDOW)
+
+    def launch_app(self, name):
+        name = norm(name)
+        if name in self.apps:
+            self._run(self.apps[name])
+            return name
+        if name in ("стим", "steam"):
+            try:
+                os.startfile("steam://open/main")
+                return "Steam"
+            except (AttributeError, OSError):
+                pass
+        if name in ("браузер", "browser", "интернет", "хром", "яндекс"):
+            if self.browser_once or self.cfg.get("browser"):
+                b = find_browser(self.browser_once or self.cfg.get("browser"))
+                if b:
+                    self._run(b)
+                    return "браузер"
+            self.web("https://www.google.com")
+            return "браузер"
+        self.index.ready.wait(timeout=5)
+        options = self.index.candidates(name, self.aliases)
+        if options:
+            return self.index.launch_best(name, options)
+        try:
+            os.startfile(name)
+            return name
+        except (AttributeError, OSError):
+            return None
+
+    def play_music(self, service, query):
+        service = (service or "").lower()
+        if "spot" in service or "спот" in service:
+            try:
+                os.startfile(f"spotify:search:{urllib.parse.quote(query)}")
+            except (AttributeError, OSError):
+                self.web(f"https://open.spotify.com/search/{urllib.parse.quote(query)}")
+        elif "sound" in service or "саунд" in service or "ск" in service:
+            if query:
+                self.web(f"https://soundcloud.com/search?q={urllib.parse.quote(query)}")
+            else:
+                self.web("https://soundcloud.com/discover")
+        else:
+            found = youtube_first(query)
+            if found:
+                vid, _ = found
+                self.web(f"https://www.youtube.com/watch?v={vid}")
+                threading.Thread(target=ensure_playing, daemon=True).start()
+            else:
+                self.web(f"https://www.youtube.com/results?search_query={urllib.parse.quote(query)}")
+
+    def open_movie(self, title):
+        self.web("https://www.kinopoisk.ru/index.php?kp_query=" + urllib.parse.quote(title))
+
+    def open_url(self, url):
+        url = url.strip()
+        if not re.match(r"^https?://", url):
+            url = "https://" + url
+        self.web(url)
+
