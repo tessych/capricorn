@@ -1324,6 +1324,9 @@ class Actions:
         hwnd = automation.find_window(("youtube",))
         if not hwnd or not automation.focus(hwnd):
             return False
+        # Fix: dismiss any stuck Alt window menu before sending keys to web player
+        send_keys(["esc"])
+        time.sleep(0.05)
         for keys in keys_list:
             send_keys(keys)
             time.sleep(0.12)

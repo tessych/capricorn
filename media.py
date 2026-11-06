@@ -200,7 +200,32 @@ def fmt(seconds):
     seconds = int(round(seconds))
     h, rest = divmod(seconds, 3600)
     m, s = divmod(rest, 60)
-    return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+    parts = []
+    if h:
+        if h % 10 == 1 and h % 100 != 11:
+            w = "час"
+        elif 2 <= h % 10 <= 4 and not (12 <= h % 100 <= 14):
+            w = "часа"
+        else:
+            w = "часов"
+        parts.append(f"{h} {w}")
+    if m:
+        if m % 10 == 1 and m % 100 != 11:
+            w = "минуту"
+        elif 2 <= m % 10 <= 4 and not (12 <= m % 100 <= 14):
+            w = "минуты"
+        else:
+            w = "минут"
+        parts.append(f"{m} {w}")
+    if s or not parts:
+        if s % 10 == 1 and s % 100 != 11:
+            w = "секунду"
+        elif 2 <= s % 10 <= 4 and not (12 <= s % 100 <= 14):
+            w = "секунды"
+        else:
+            w = "секунд"
+        parts.append(f"{s} {w}")
+    return " ".join(parts)
 
 
 # ---------------- запасной путь для YouTube в браузере ----------------

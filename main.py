@@ -88,6 +88,8 @@ DEFAULTS = {
     "followup_seconds": 6,
     "hide_after_seconds": 12,
     "greet_on_start": True,
+    "rvc_model": "default",
+    "rvc_change_avatar": True,
     "vosk_model": "models/vosk-model-small-ru-0.22",
     "sites": {
         "ютуб": "https://www.youtube.com", "youtube": "https://www.youtube.com",
@@ -254,6 +256,7 @@ class Capri(QObject):
     roam = Signal()
     hop = Signal()
     move_to = Signal(str)
+    custom_avatar = Signal(str)
 
     def __init__(self, cfg):
         super().__init__()
@@ -447,6 +450,23 @@ class Capri(QObject):
         if self.deepseek:
             self.deepseek.set_key(key)
         log.info("Ключ DeepSeek %s", "сохранён" if key else "удалён")
+
+    def set_voice(self, voice):
+        """Сменить голос синтезатора речи Edge TTS."""
+        voice = (voice or "").strip()
+        self.cfg["voice"] = voice
+        save_setting("voice", voice)
+        if self.speaker:
+            self.speaker.voice = voice
+        log.info("Голос изменён на: %s", voice)
+
+    def set_avatar(self, path=None):
+        """Сменить аватар на картинку персонажа (path) или вернуть стандартный вид Капри (None)."""
+        self.custom_avatar.emit(path or "")
+
+    @staticmethod
+    def save_setting(key, value):
+        save_setting(key, value)
 
     def set_chatter(self, on):
         """Галочка в трее: появляется ли Капри сама (поболтать, погулять по экрану). Сразу и запоминается."""
@@ -746,7 +766,17 @@ def main():
     capri.roam.connect(avatar.start_roam)
     capri.hop.connect(avatar.start_hopping)
     capri.move_to.connect(avatar.move_to_named)
+    capri.custom_avatar.connect(avatar.set_custom_avatar)
     avatar.clicked.connect(capri.call_from_click)
+
+    if cfg.get("rvc_change_avatar", True) and cfg.get("rvc_model", "default") != "default":
+        try:
+            from voice_dialog import get_character_image
+            initial_avatar = get_character_image(cfg["rvc_model"])
+            if initial_avatar:
+                avatar.set_custom_avatar(initial_avatar)
+        except Exception:
+            pass
 
     def ask_text():
         text, ok = QInputDialog.getText(None, "Капри", "Команда или вопрос:")
@@ -781,11 +811,16 @@ def main():
         from deepseek_dialog import DeepSeekDialog
         show_window("deepseek", lambda: DeepSeekDialog(capri))
 
+    def open_voice():
+        from voice_dialog import VoiceDialog
+        show_window("voice", lambda: VoiceDialog(capri))
+
     menu = QMenu()
     for title, fn in (("Позвать Капри", capri.call_from_click),
                       ("Замолчать", capri.interrupt),
                       ("Написать команду…", ask_text),
                       ("Мои сайты, программы и ответы…", open_entries),
+                      ("Выбрать голос…", open_voice),
                       ("Как ко мне обращаться…", open_profile),
                       ("Ключ DeepSeek API…", open_deepseek),
                       ("Проверить ПК", lambda: capri.text_command("проверь компьютер")),

@@ -422,30 +422,13 @@ class Avatar(QWidget):
         global DPR
         DPR = max([s.devicePixelRatio() for s in QGuiApplication.screens()] or [1.0])
 
-        # Позы: все картинки из assets/poses (и, для совместимости, assets/capri.png).
-        # Они периодически сменяют друг друга, чтобы Капри не стояла статичной картинкой.
-        pose_dir = os.path.join(assets_dir, "poses")
-        pose_files = []
-        for folder in (assets_dir, pose_dir):
-            if not os.path.isdir(folder):
-                continue
-            for name in sorted(os.listdir(folder)):
-                low = name.lower()
-                if folder == assets_dir and low not in ("capri.png", "capri.jpg", "capri.webp"):
-                    continue
-                if low.endswith((".png", ".webp", ".jpg")) and low not in [os.path.basename(f).lower()
-                                                                            for f in pose_files]:
-                    pose_files.append(os.path.join(folder, name))
-        self.poses = [img for img in (load_custom(f, W, FIG_H) for f in pose_files) if img is not None]
-        if self.poses:
-            self.base, self.eye_pos = self.poses[0], None
-        else:  # картинок нет — рисованная Капри с глазом
-            self.base, self.eye_pos = build_procedural(W, FIG_H)
-            self.poses = [self.base]
+        self.assets_dir = assets_dir
+        self.custom_avatar = None
+        self._load_default_poses()
 
         # поза для прогулок: capri_roam.png в assets или в poses
         self.roam_img = None
-        for path in (os.path.join(assets_dir, "capri_roam.png"), os.path.join(pose_dir, "capri_roam.png")):
+        for path in (os.path.join(assets_dir, "capri_roam.png"), os.path.join(assets_dir, "poses", "capri_roam.png")):
             if os.path.exists(path):
                 self.roam_img = load_custom(path, W, FIG_H)
                 break
@@ -605,6 +588,48 @@ class Avatar(QWidget):
                 self.hop_home = None
         return self.tele_target is not None
 
+    def _load_default_poses(self):
+        pose_dir = os.path.join(self.assets_dir, "poses")
+        pose_files = []
+        for folder in (self.assets_dir, pose_dir):
+            if not os.path.isdir(folder):
+                continue
+            for name in sorted(os.listdir(folder)):
+                low = name.lower()
+                if folder == self.assets_dir and low not in ("capri.png", "capri.jpg", "capri.webp"):
+                    continue
+                if low.endswith((".png", ".webp", ".jpg")) and low not in [os.path.basename(f).lower()
+                                                                            for f in pose_files]:
+                    pose_files.append(os.path.join(folder, name))
+        self.poses = [img for img in (load_custom(f, W, FIG_H) for f in pose_files) if img is not None]
+        if self.poses:
+            self.base, self.eye_pos = self.poses[0], None
+        else:
+            self.base, self.eye_pos = build_procedural(W, FIG_H)
+            self.poses = [self.base]
+        self.pose_idx = 0
+        self.custom_avatar = None
+        self.next_pose = time.time() + random.uniform(12, 30) if len(self.poses) > 1 else 0.0
+
+    def set_custom_avatar(self, path=None):
+        """Установить аватар персонажа по пути к картинке или вернуть стандартные позы Капри."""
+        if path and os.path.isfile(path):
+            img = load_custom(path, W, FIG_H)
+            if img is not None:
+                self.poses = [img]
+                self.base = img
+                self.eye_pos = None
+                self.pose_idx = 0
+                self.custom_avatar = path
+                self.next_pose = 0.0
+                self.burst, self.burst_level = 6, 0.9
+                self.update()
+                return True
+        self._load_default_poses()
+        self.burst, self.burst_level = 6, 0.9
+        self.update()
+        return False
+
     def change_pose(self, idx=None):
         """Сменить позу с глитч-вспышкой. Без idx — любая другая."""
         if len(self.poses) < 2:
@@ -700,12 +725,15 @@ class Avatar(QWidget):
 
     def _figure(self):
         if self.anim:
-            frames = self.anims[self.anim]
-            idx = int((time.time() - self.anim_start) * ANIM_FPS)
-            if idx < len(frames) or self.anim_loop:
-                return frames[idx % len(frames)].copy()
-            self.anim = None
-        if self.roaming and self.roam_img is not None:
+            if self.custom_avatar:
+                self.anim = None
+            else:
+                frames = self.anims[self.anim]
+                idx = int((time.time() - self.anim_start) * ANIM_FPS)
+                if idx < len(frames) or self.anim_loop:
+                    return frames[idx % len(frames)].copy()
+                self.anim = None
+        if self.roaming and self.roam_img is not None and not self.custom_avatar:
             return self.roam_img.copy()
         fig = self.base.copy()
         if self.eye_pos is None:
