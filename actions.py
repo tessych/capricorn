@@ -950,7 +950,6 @@ class Actions:
         self.choice = None  # варианты приложений, из которых пользователь сейчас выбирает
         self.youtube_opened_at = 0.0  # когда Капри последний раз открывала YouTube
         self.media_paused = None      # какой плеер Капри поставила на паузу
-        self.local = None
         self.routes = [
             (r"^(выход|выключись|отключись|заверши работу|завершить работу)$", self.quit),
             (r"^(спрячься|скройся|исчезни|пока|отбой|свободна)\b|"
@@ -1027,11 +1026,13 @@ class Actions:
             (r"^(найди|поищи|загугли|погугли|расскажи|узнай|посмотри)( мне)?( в интернете| в гугле| в сети)? "
              r"(информаци\w*|инфу|инфо|что-нибудь|что нибудь|всё|все|сведения|данные|статью)( (о|об|про|по))? "
              r"(?P<q>.+)$", self.info),
+            # Fix: support playlists, streams, radio, and trailing youtube phrases
             (r"^(открой|включи|покажи|найди|запусти|поставь|врубай|вруби)( мне)?( какое-нибудь| какой-нибудь| "
              r"какое нибудь| любое| любой| одно| одно)? (?P<kind>видео\w*|видос\w*|"
-             r"ролик\w*|клип\w*|песн\w*|трек\w*|музык\w*)( на ютуб\w*| в ютуб\w*)?( (с|со|про|о|об|где|на тему))? "
-             r"(?P<q>.+)$", self.video),
+             r"ролик\w*|клип\w*|песн\w*|трек\w*|музык\w*|плейлист\w*|стрим\w*|трансляци\w*|радио)( на ютуб\w*| в ютуб\w*)?"
+             r"( (с|со|про|о|об|где|на тему))?( (?P<q>.+))?$", self.video),
             (r"^(открой|включи|покажи|запусти|поставь)( мне)? (на|в) (ютуб\w*|youtube) (?P<q>.+)$", self.video),
+            (r"^(открой|включи|покажи|запусти|поставь|врубай|вруби)( мне)? (?P<q>.+)\s+(на|в) (ютуб\w*|youtube)$", self.video),
             (r"^(найди|поищи|загугли|погугли|ищи)( в интернете| в гугле| в google)? (?P<q>.+)$", self.search),
             (r"^(открой|запусти|включи|зайди на|перейди на|покажи) (?P<t>.+)$", self.open),
             (r"^((сними|снять) (задачу|процесс\w*)|(заверши|завершить|убей|убить|останови|закрой) "
@@ -1657,8 +1658,6 @@ class Actions:
         os.startfile(path)
         use_ai = self.cfg.get("enable_ai") and self.ai and self.ai.available
         spoken = self.ai.summarize_report(report) if use_ai else None
-        if not spoken and self.local:
-            spoken = self.local.summarize_report(report)
         if spoken:
             return Reply(spoken)
         if not issues:
@@ -1911,13 +1910,22 @@ class Actions:
         return Reply(line("web", q=q))
 
     def video(self, c, m):
-        q = m.group("q").strip()
+        q = (m.group("q") or "").strip()
         q = re.sub(r"\s+(на|в) (ютуб\w*|youtube)$", "", q)  # «включи песню X на ютубе»
         q = re.sub(r"^(на|в) (ютуб\w*|youtube)\s*", "", q).strip()
-        if not q or q in ("на", "в", "с", "про", "о"):  # «открой какое-нибудь видео на ютубе»
-            q = random.choice(["интересное видео", "смешные моменты", "залипательное видео", "лучшие клипы"])
         kind = m.groupdict().get("kind") or ""
-        search = q + (" песня" if re.match(r"песн|трек", kind) else "")
+        if not q or q in ("на", "в", "с", "про", "о") or re.fullmatch(r"(какое-нибудь|какой-нибудь|какое нибудь|любое|любой|одно)", q):
+            if re.search(r"плейлист", kind):
+                q = random.choice(["популярный плейлист", "chill music playlist", "музыкальный плейлист", "lofi hip hop"])
+            elif re.search(r"стрим|трансляци", kind):
+                q = "live stream chill"
+            elif re.search(r"радио", kind):
+                q = "radio live"
+            else:
+                q = random.choice(["интересное видео", "смешные моменты", "залипательное видео", "лучшие клипы"])
+        search = q + (" песня" if re.match(r"песн|трек", kind) and "песн" not in q and "трек" not in q else "")
+        if re.search(r"плейлист", kind) and "плейлист" not in search and "playlist" not in search:
+            search += " playlist"
         found = youtube_first(search)
         if not found:  # не вышло достать первое видео — хотя бы откроем поиск
             self.web("https://www.youtube.com/results?search_query=" + urllib.parse.quote(search))

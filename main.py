@@ -41,7 +41,6 @@ try:
     from actions import CAPRI_URL, Actions, Reply
     from ai import AI
     from deepseek import DeepSeekAI
-    from local_ai import LocalAI
     from persona import LINES, gendered, line, set_user
     from avatar import Avatar
     import zapret
@@ -55,8 +54,6 @@ except ImportError as e:
 
 DEFAULTS = {
     "enable_ai": False,
-    "local_ai": True,
-    "local_model": "qwen3:8b",
     "deepseek_api_key": "",
     "deepseek_model": "deepseek-chat",
     "barge_in": True,
@@ -266,13 +263,9 @@ class Capri(QObject):
                                   re.IGNORECASE)
         self.ai = AI(cfg)
         self.deepseek = DeepSeekAI(cfg)
-        self.local = LocalAI(cfg) if cfg.get("local_ai") else None
-        if self.local:
-            self.local.on_model_change = self._remember_model
         self.actions = Actions(cfg, BASE, self.ai, save=save_entry)
         self.config_mtime = self._config_mtime()
         self.zapret_checked = False  # предлагали ли уже исправить zapret в этом сеансе
-        self.actions.local = self.local
         self.actions.deepseek = self.deepseek
         self.speaker = Speaker(cfg)
         self.jobs = queue.Queue()
@@ -293,9 +286,7 @@ class Capri(QObject):
 
     def start(self):
         threading.Thread(target=self._worker, daemon=True).start()
-        if self.local:
-            threading.Thread(target=self.local.start_server, daemon=True).start()
-        model =os.path.join(BASE, self.cfg["vosk_model"])
+        model = os.path.join(BASE, self.cfg["vosk_model"])
         if os.path.isdir(model):
             self.listener = Listener(model, self.on_final, self.on_partial, self.on_listener_error,
                                      device_name=self.cfg.get("mic_device") or None,
@@ -348,8 +339,6 @@ class Capri(QObject):
             text = line("chatter_night")
         elif 6 <= hour < 11 and random.random() < 0.3:
             text = line("chatter_morning")
-        elif self.local and random.random() < 0.4:
-            text = self.local.chatter()
         for _ in range(5):
             if text and text not in self.recent_chatter:
                 break
@@ -470,11 +459,6 @@ class Capri(QObject):
         self.cfg["search_when_unsure"] = bool(on)
         save_setting("search_when_unsure", bool(on))
         log.info("Поиск в браузере, если не знаю: %s", "включён" if on else "выключен")
-
-    def _remember_model(self, name):
-        """Ollama нашла другую скачанную модель — записываем её, чтобы не искать при каждом запуске."""
-        self.cfg["local_model"] = name
-        save_setting("local_model", name)
 
     # ----- config.json на лету -----
     @staticmethod
@@ -645,14 +629,13 @@ class Capri(QObject):
         if reply is not None and reply.action in ("mic_info", "mic_next"):
             reply = self.mic_command(reply.action)
         if reply is None:
-            # Fix: query DeepSeek with tool support if configured, then Claude, then local model
+            # Fix: query DeepSeek with tool support if configured, then Claude, otherwise fallback
             if self.deepseek and self.deepseek.available:
                 reply = Reply(self.deepseek.ask(cmd, actions=self.actions), "answer")
             elif self.cfg.get("enable_ai") and self.ai.available:
                 reply = Reply(self.ai.ask(cmd), "answer")
             else:
-                answer = self.local.ask(cmd) if self.local else None
-                reply = Reply(answer, "answer") if answer else self.actions.fallback(cmd, force_search=bool(self.local))
+                reply = self.actions.fallback(cmd, force_search=False)
         if reply.action == "answer" and self.cfg.get("teleport_on_answer"):
             self.hop.emit()  # отвечает, скача по экрану красной молнией
         if reply.action == "wave":
