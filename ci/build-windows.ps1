@@ -5,8 +5,16 @@ $framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
 $compiler = Join-Path $framework 'csc.exe'
 $wpf = Join-Path $framework 'WPF'
 $winmd = Get-ChildItem -LiteralPath (Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\UnionMetadata') -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^\d+(\.\d+)+$' } | Sort-Object { [version]$_.Name } -Descending | ForEach-Object { Join-Path $_.FullName 'Windows.winmd' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (-not $winmd) {
+    $systemMetadata = Join-Path $env:WINDIR 'System32\WinMetadata'
+    if (Test-Path -LiteralPath (Join-Path $systemMetadata 'Windows.winmd')) {
+        $winmd = @(Join-Path $systemMetadata 'Windows.winmd')
+    } elseif (Test-Path -LiteralPath $systemMetadata) {
+        $winmd = @(Get-ChildItem -LiteralPath $systemMetadata -Filter *.winmd -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+    }
+}
 if (-not (Test-Path -LiteralPath $compiler)) { throw 'csc.exe not found. Capri needs the .NET Framework 4.8 that comes with Windows 10 and 11.' }
-if (-not $winmd) { throw 'Windows.winmd not found. Install the Windows 10 or 11 SDK.' }
+if (-not $winmd -or $winmd.Count -eq 0) { throw 'Windows.winmd not found. Install the Windows 10 or 11 SDK.' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $root 'out\windows' }
 $out = [IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $out -Force | Out-Null
@@ -14,9 +22,13 @@ $app = Join-Path $out 'Capri.exe'
 $setup = Join-Path $out 'Capri-Setup.exe'
 $icon = Join-Path $root 'assets\chip.ico'
 $shared = @('/nologo', '/target:winexe', '/platform:anycpu', '/optimize+', '/utf8output', '/warn:4', ('/win32manifest:' + (Join-Path $root 'app\app.manifest')), ('/win32icon:' + $icon), '/reference:System.dll', '/reference:System.Core.dll', '/reference:System.Drawing.dll', '/reference:System.Windows.Forms.dll')
-$references = @('/reference:System.Runtime.Serialization.dll', '/reference:System.IO.Compression.dll', '/reference:System.IO.Compression.FileSystem.dll', '/reference:System.Security.dll', ('/reference:' + (Join-Path $wpf 'UIAutomationClient.dll')), ('/reference:' + (Join-Path $wpf 'UIAutomationTypes.dll')), ('/reference:' + (Join-Path $wpf 'WindowsBase.dll')), ('/reference:' + (Join-Path $wpf 'System.Speech.dll')), ('/reference:' + $winmd), ('/reference:' + (Join-Path $framework 'System.Runtime.dll')), ('/reference:' + (Join-Path $framework 'System.Runtime.WindowsRuntime.dll')), ('/reference:' + (Join-Path $framework 'System.Runtime.InteropServices.WindowsRuntime.dll')))
+$winmdRefs = @($winmd) | ForEach-Object { '/reference:' + $_ }
+$references = @('/reference:System.Runtime.Serialization.dll', '/reference:System.IO.Compression.dll', '/reference:System.IO.Compression.FileSystem.dll', '/reference:System.Security.dll', ('/reference:' + (Join-Path $wpf 'UIAutomationClient.dll')), ('/reference:' + (Join-Path $wpf 'UIAutomationTypes.dll')), ('/reference:' + (Join-Path $wpf 'WindowsBase.dll')), ('/reference:' + (Join-Path $wpf 'System.Speech.dll'))) + $winmdRefs + @(('/reference:' + (Join-Path $framework 'System.Runtime.dll')), ('/reference:' + (Join-Path $framework 'System.Runtime.WindowsRuntime.dll')), ('/reference:' + (Join-Path $framework 'System.Runtime.InteropServices.WindowsRuntime.dll')))
 $resources = @(('/resource:' + $icon + ',Capri.Chip.ico'), ('/resource:' + (Join-Path $root 'assets\fonts\ShareTechMono-Regular.ttf') + ',Capri.Font.Mono.ttf'))
 $resources += ('/resource:' + (Join-Path $root 'assets\cursor.png') + ',Capri.Cursor.png')
+$linesRussian = Join-Path $root 'assets\lines-russian.txt'
+if (-not (Test-Path -LiteralPath $linesRussian)) { $linesRussian = Join-Path $root 'lines-russian.txt' }
+if (Test-Path -LiteralPath $linesRussian) { $resources += ('/resource:' + $linesRussian + ',Capri.Lines.Russian.txt') }
 # The Store copy carries no driver: policy 10.1.5 leaves non-Microsoft drivers out of what an app may bring in.
 if (-not $Store) { $resources += ('/resource:' + (Join-Path $root 'assets\vbcable\VBCABLE_Driver_Pack45.zip') + ',Capri.VBCABLE.zip') }
 $resources += Get-ChildItem -LiteralPath (Join-Path $root 'assets\sprites') -Filter *.png | ForEach-Object { '/resource:' + $_.FullName + ',Capri.Sprite.' + $_.Name }

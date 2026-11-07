@@ -4185,10 +4185,17 @@ namespace CapriDesktop
         {
             ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            if (request.RequestUri.IsLoopback) request.AllowAutoRedirect = false;
+            if (request.RequestUri.IsLoopback)
+            {
+                request.AllowAutoRedirect = false;
+                request.Proxy = null;
+            }
+            else
+            {
+                request.Proxy = WebRequest.DefaultWebProxy;
+            }
             request.ServicePoint.ConnectionLimit = Math.Max(request.ServicePoint.ConnectionLimit, 16);
             request.ServicePoint.Expect100Continue = false;
-            request.Proxy = null;
             request.UserAgent = "Capri-Desktop";
             request.Timeout = timeout;
             request.ReadWriteTimeout = timeout;
@@ -4714,6 +4721,42 @@ namespace CapriDesktop
             made = new HashSet<string>(StringComparer.Ordinal);
             missed.Clear();
             failed = DateTime.MinValue;
+            string name = Regex.Replace((tongue ?? "").ToLowerInvariant(), @"[^\p{L}\p{Nd}]+", "-").Trim('-');
+            if (name.Length > 0)
+            {
+                try
+                {
+                    Assembly assembly = typeof(Said).Assembly;
+                    string resName = "Capri.Lines." + name + ".txt";
+                    Stream stream = null;
+                    foreach (string res in assembly.GetManifestResourceNames())
+                    {
+                        if (string.Equals(res, resName, StringComparison.OrdinalIgnoreCase) ||
+                            (name == "russian" && string.Equals(res, "Capri.Lines.Russian.txt", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            stream = assembly.GetManifestResourceStream(res);
+                            break;
+                        }
+                    }
+                    if (stream != null)
+                    {
+                        using (stream)
+                        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                        {
+                            string row;
+                            while ((row = reader.ReadLine()) != null)
+                            {
+                                int tab = row.IndexOf('\t');
+                                if (tab <= 0 || tab == row.Length - 1) continue;
+                                lines[row.Substring(0, tab)] = row.Substring(tab + 1);
+                                made.Add(row.Substring(tab + 1));
+                            }
+                        }
+                    }
+                }
+                catch (IOException) { }
+                catch (ArgumentException) { }
+            }
             string path = PathFor(tongue);
             if (path == null || !File.Exists(path)) return;
             try

@@ -3441,13 +3441,17 @@ namespace CapriDesktop
                 if (spotify && (loud == "volume_up" || loud == "volume_down")) args.App = "spotify";
                 return true;
             }
-            Match found = Regex.Match(text, @"^(?:open|launch|start|go to|fire up|load up)\s+(spotify|youtube)\s*(?:,|and|&)?\s*(?:then\s+)?(?:play|shuffle|put on|blast)\s+(.+)$", RegexOptions.IgnoreCase);
-            if (found.Success) text = "play " + found.Groups[2].Value + " on " + found.Groups[1].Value;
+            Match found = Regex.Match(text, @"^(?:open|launch|start|go to|fire up|load up|открой|запусти)\s+(spotify|youtube|спотифай|ютуб[еа]?)\s*(?:,|and|&|и)?\s*(?:then\s+|потом\s+)?(?:play|shuffle|put on|blast|включи|поставь|сыграй)\s+(.+)$", RegexOptions.IgnoreCase);
+            if (found.Success)
+            {
+                string targetApp = found.Groups[1].Value.ToLowerInvariant();
+                text = "play " + found.Groups[2].Value + " on " + (targetApp.StartsWith("спот") || targetApp == "spotify" ? "spotify" : "youtube");
+            }
             if (Regex.IsMatch(text, @"\b(and|then|but)\s+(open|launch|play|close|quit|pause|don't|do not)\b", RegexOptions.IgnoreCase)) return false;
             ToolArguments website = WebsiteRequest(text);
             if (website != null) { tool = "open_website"; args = website; return true; }
-            if (Regex.IsMatch(text, @"^(?:open|launch|start|run|load up|boot up|fire up|pull up|bring up|show me|get me)\s+(?:(?:a|the|my|your)\s+)?calc(?:ulator)?$", RegexOptions.IgnoreCase) && Installed("Calculator")) { tool = "open_app"; args.Name = "Calculator"; return true; }
-            found = Regex.Match(text, @"^(open|launch|start|run|load up|boot up|fire up)\s+(up\s+)?(.+)$", RegexOptions.IgnoreCase);
+            if (Regex.IsMatch(text, @"^(?:open|launch|start|run|load up|boot up|fire up|pull up|bring up|show me|get me|открой|запусти|включи|покажи)\s+(?:(?:a|the|my|your|мне)\s+)?(?:calc(?:ulator)?|калькулятор)$", RegexOptions.IgnoreCase) && Installed("Calculator")) { tool = "open_app"; args.Name = "Calculator"; return true; }
+            found = Regex.Match(text, @"^(open|launch|start|run|load up|boot up|fire up|открой|запусти|вруби|включи)\s+(up\s+)?(.+)$", RegexOptions.IgnoreCase);
             if (found.Success)
             {
                 string target = found.Groups[3].Value.Trim();
@@ -3462,10 +3466,10 @@ namespace CapriDesktop
                 if (Site(target)) { tool = "open_website"; args.Site = target; return true; }
                 return false;
             }
-            found = Regex.Match(text, @"^(?:google|look up)\s+(.+)$", RegexOptions.IgnoreCase);
-            if (found.Success && !Regex.IsMatch(found.Groups[1].Value, @"^(it|this|that|something|stuff|for me)$", RegexOptions.IgnoreCase)) { tool = "open_website"; args.Site = "google"; args.Search = found.Groups[1].Value.Trim(); return true; }
+            found = Regex.Match(text, @"^(?:google|look up|погугли|загугли|найди в гугле|найди)\s+(.+)$", RegexOptions.IgnoreCase);
+            if (found.Success && !Regex.IsMatch(found.Groups[1].Value, @"^(it|this|that|something|stuff|for me|это|что-то|что-нибудь|для меня)$", RegexOptions.IgnoreCase)) { tool = "open_website"; args.Site = "google"; args.Search = found.Groups[1].Value.Trim(); return true; }
             if (Regex.IsMatch(text, LookupWords, RegexOptions.IgnoreCase) && !Regex.IsMatch(Regex.Replace(text, @"\bnear me\b", ""), @"\b(my|your|you|me|i)\b", RegexOptions.IgnoreCase)) { tool = "open_website"; args.Site = "google"; args.Search = text; return true; }
-            found = Regex.Match(text, @"^(?:play|shuffle|put on|blast)\s+(.+?)(\s+on\s+(spotify|youtube))?$", RegexOptions.IgnoreCase);
+            found = Regex.Match(text, @"^(?:play|shuffle|put on|blast|включи|поставь|сыграй|вруби)\s+(.+?)(\s+(?:on|в|на)\s+(spotify|youtube|спотифай|ютуб[еа]?))?$", RegexOptions.IgnoreCase);
             if (found.Success)
             {
                 string target = found.Groups[1].Value.Trim();
@@ -3480,7 +3484,11 @@ namespace CapriDesktop
                 // "play the wasd minigame" is a game, not a song to search Spotify for (a tester, 30 Oct), and so is a game that's open.
                 if (!found.Groups[3].Success && (Playable.IsMatch(target) || PlainGame.IsMatch(target) || Nickname(target) != null || Showing(target))) return false;
                 if (brainy && !ClearMusic(target, found.Groups[3].Success)) return false;
-                if (found.Groups[3].Success) args.App = found.Groups[3].Value.ToLowerInvariant();
+                if (found.Groups[3].Success)
+                {
+                    string targetApp = found.Groups[3].Value.ToLowerInvariant();
+                    args.App = (targetApp.StartsWith("спот") || targetApp == "spotify") ? "spotify" : "youtube";
+                }
                 if (Regex.IsMatch(target, @"^(music$|some music$|((a|any|some|random) )?(song|track|tune|music)s?$|(something|anything)\b(?!\s+by\s))", RegexOptions.IgnoreCase)) { tool = "play_music"; args.Kind = "song"; args.Song = Pick(); return true; }
                 Match kind = Regex.Match(target, @"^(?:(?:the|my|your)\s+)?(.+?)\s+(playlist|album)$", RegexOptions.IgnoreCase);
                 Match first = Regex.Match(target, @"^(?:the\s+)?(playlist|album)\s+(.+)$", RegexOptions.IgnoreCase);
@@ -3519,12 +3527,12 @@ namespace CapriDesktop
                 args.Asked = said;
                 return true;
             }
-            found = Regex.Match(text, @"^(close|quit|exit|kill|shut down|switch to|go to|bring up|show me|minimi[sz]e)\s+(.+)$", RegexOptions.IgnoreCase);
-            if (!found.Success || Regex.IsMatch(found.Groups[2].Value, @"^(it|this|that|them|this one|that one|everything|all|all of (it|them)|the window|this window|that window)$", RegexOptions.IgnoreCase) || !Showing(found.Groups[2].Value)) return false;
+            found = Regex.Match(text, @"^(close|quit|exit|kill|shut down|switch to|go to|bring up|show me|minimi[sz]e|закрой|выключи|сверни|переключи на|перейди в|покажи)\s+(.+)$", RegexOptions.IgnoreCase);
+            if (!found.Success || Regex.IsMatch(found.Groups[2].Value, @"^(it|this|that|them|this one|that one|everything|all|all of (it|them)|the window|this window|that window|это|все|окно|это окно)$", RegexOptions.IgnoreCase) || !Showing(found.Groups[2].Value)) return false;
             string verb = found.Groups[1].Value.ToLowerInvariant();
             tool = "app_window";
             args.Name = found.Groups[2].Value.Trim();
-            args.Action = verb.StartsWith("minimi", StringComparison.Ordinal) ? "minimize" : Regex.IsMatch(verb, "^(close|quit|exit|kill|shut down)$") ? "close" : "switch_to";
+            args.Action = verb.StartsWith("minimi", StringComparison.Ordinal) || verb.StartsWith("сверн", StringComparison.Ordinal) ? "minimize" : Regex.IsMatch(verb, "^(close|quit|exit|kill|shut down|закрой|выключи)$") ? "close" : "switch_to";
             args.Asked = said;
             return true;
         }
@@ -4913,15 +4921,15 @@ namespace CapriDesktop
             return null;
         }
 
-        private const string Machine = @"(?:(?:my|the|this|ur|your|our)\s+)?(?:pc|computer|laptop|system|machine|rig|windows|device)";
+        private const string Machine = @"(?:(?:my|the|this|ur|your|our|мой|этот|твой)\s+)?(?:pc|computer|laptop|system|machine|rig|windows|device|пк|комп|компьютер|ноут|ноутбук|систему|машину)";
         private static readonly string[] PowerWords =
         {
-            @"^(?:shut ?down|turn off|power (?:off|down)|switch off)\s+" + Machine + @"$|^(?:shut|turn|power|switch)\s+" + Machine + @"\s+(?:down|off)$", "shut_down",
-            @"^(?:restart|reboot)\s+" + Machine + "$", "restart",
-            @"^(?:put|send)\s+" + Machine + @"\s+to sleep$|^(?:sleep|hibernate)\s+" + Machine + @"$|^(?:make|let)\s+" + Machine + @"\s+(?:go to )?sleep$", "sleep",
-            @"^lock\s+(?:" + Machine + @"|(?:(?:my|the|this)\s+)?(?:screen|desktop))$", "lock",
-            @"^(?:sign|log) me (?:out|off)$|^(?:sign|log) (?:out|off)(?: of)?\s+(?:" + Machine + @"|(?:my )?windows account)$", "sign_out",
-            @"^(?:cancel|stop|abort|undo)\s+(?:the |that |my )?(?:shut ?down|restart|reboot|sleep|sign ?out|log ?out)$|^(?:don'?t|do not)\s+(?:shut ?down|turn off|restart|reboot)(?:\s+(?:it|" + Machine + "))?$", "cancel"
+            @"^(?:shut ?down|turn off|power (?:off|down)|switch off)\s+" + Machine + @"$|^(?:shut|turn|power|switch)\s+" + Machine + @"\s+(?:down|off)$|^(?:выключи|заверши работу|выруби)\s+" + Machine + @"$", "shut_down",
+            @"^(?:restart|reboot)\s+" + Machine + @"$|^(?:перезагрузи|перезапусти)\s+" + Machine + @"$", "restart",
+            @"^(?:put|send)\s+" + Machine + @"\s+to sleep$|^(?:sleep|hibernate)\s+" + Machine + @"$|^(?:make|let)\s+" + Machine + @"\s+(?:go to )?sleep$|^(?:отправь в сон|усыпи|в сон|в спящий режим)\s*" + Machine + @"?$", "sleep",
+            @"^lock\s+(?:" + Machine + @"|(?:(?:my|the|this)\s+)?(?:screen|desktop))$|^(?:заблокируй|залочь)\s+(?:" + Machine + @"|(?:(?:мой|этот)\s+)?(?:экран|комп|пк|рабочий стол))$", "lock",
+            @"^(?:sign|log) me (?:out|off)$|^(?:sign|log) (?:out|off)(?: of)?\s+(?:" + Machine + @"|(?:my )?windows account)$|^(?:выйди из системы|разлогинься)$", "sign_out",
+            @"^(?:cancel|stop|abort|undo)\s+(?:the |that |my )?(?:shut ?down|restart|reboot|sleep|sign ?out|log ?out)$|^(?:don'?t|do not)\s+(?:shut ?down|turn off|restart|reboot)(?:\s+(?:it|" + Machine + "))?$|^(?:отмени|не выключай|стой|отмена)(?:\s+(?:выключение|" + Machine + "))?$", "cancel"
         };
         private static DateTime powered = DateTime.MinValue;
         private static System.Threading.Timer powerLater;
@@ -4933,7 +4941,7 @@ namespace CapriDesktop
         {
             minutes = null;
             // Right after she starts shutting down, "no", "wait" or "stop" means cancel it.
-            if ((DateTime.Now - powered).TotalSeconds < 20 && Regex.IsMatch(text, @"^(no+|nah|nope|wait|stop|cancel|abort|undo|don'?t|do not|never ?mind|hold on|hold up)\b", RegexOptions.IgnoreCase)) return "cancel";
+            if ((DateTime.Now - powered).TotalSeconds < 20 && Regex.IsMatch(text, @"^(no+|nah|nope|wait|stop|cancel|abort|undo|don'?t|do not|never ?mind|hold on|hold up|нет|стой|погоди|отмена|не надо|стоп)\b", RegexOptions.IgnoreCase)) return "cancel";
             Match later = Regex.Match(text, @"\s+in\s+(\d{1,4}|an?|one)\s*(min(ute)?s?|h(ou)?rs?)$", RegexOptions.IgnoreCase);
             string asked = later.Success ? text.Substring(0, later.Index) : text;
             for (int i = 0; i < PowerWords.Length; i += 2)

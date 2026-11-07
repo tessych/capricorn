@@ -27,6 +27,7 @@ namespace CapriDesktop
         private static readonly PrivateFontCollection fonts = new PrivateFontCollection();
         private static IntPtr fontMemory;
         private static readonly FontFamily embedded = Embedded("Capri.Font.Mono.ttf");
+        internal static FontFamily EmbeddedFont { get { return embedded; } }
         private static Cursor pointer;
 
         [StructLayout(LayoutKind.Sequential)] private struct IconInfo { internal bool Icon; internal int X; internal int Y; internal IntPtr Mask; internal IntPtr Colour; }
@@ -178,13 +179,33 @@ namespace CapriDesktop
             return FallbackMono(size, style, unit);
         }
 
+        internal static bool Cyrillic(char c)
+        {
+            return (c >= 0x0400 && c <= 0x052F) || (c >= 0x2DE0 && c <= 0x2DFF) || (c >= 0xA640 && c <= 0xA69F) || (c >= 0x1C80 && c <= 0x1C8F);
+        }
+
+        internal static bool Cyrillic(string text)
+        {
+            foreach (char c in text ?? "") if (Cyrillic(c)) return true;
+            return false;
+        }
+
         internal static Font FallbackMono(float size, FontStyle style, GraphicsUnit unit)
         {
             foreach (string family in new[] { "Cascadia Mono", "Consolas", "Courier New" })
             {
-                Font font = new Font(family, size, style, unit);
-                if (font.Name == family) return font;
-                font.Dispose();
+                try
+                {
+                    using (FontFamily fam = new FontFamily(family))
+                    {
+                        if (!string.Equals(fam.Name, family, StringComparison.OrdinalIgnoreCase)) continue;
+                        FontStyle pick = fam.IsStyleAvailable(style) ? style : FontStyle.Regular;
+                        Font font = new Font(family, size, pick, unit);
+                        if (string.Equals(font.Name, fam.Name, StringComparison.OrdinalIgnoreCase)) return font;
+                        font.Dispose();
+                    }
+                }
+                catch { }
             }
             return new Font(FontFamily.GenericMonospace, size, style, unit);
         }
@@ -283,6 +304,15 @@ namespace CapriDesktop
         // any other line, which draws exactly as before.
         internal static float Draw(Graphics graphics, string text, Font font, Brush brush, float x, float y)
         {
+            if (string.IsNullOrEmpty(text)) return x;
+            if (Cyrillic(text) && embedded != null && string.Equals(font.FontFamily.Name, embedded.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                using (Font cyrillic = FallbackMono(font.Size, font.Style, font.Unit))
+                {
+                    graphics.DrawString(text, cyrillic, brush, x, y, StringFormat.GenericTypographic);
+                    return x;
+                }
+            }
             if (!Burmese(text)) { graphics.DrawString(text, font, brush, x, y, StringFormat.GenericTypographic); return x; }
             using (Font burmese = Myanmar(font))
             {
@@ -827,23 +857,31 @@ namespace CapriDesktop
             return new Rectangle(meter.Left + bar * Pitch(s), meter.Bottom - square - row * Pitch(s), square, square);
         }
 
-        private static Font LabelFont(float s) { return Look.Mono(8.5f * s, FontStyle.Regular); }
+        private static Font LabelFont(float s, string text = null) { return Look.Mono(8.5f * s, FontStyle.Regular, GraphicsUnit.Pixel, text); }
 
         // Where a label's letters land, from where it's drawn.
         private static Rectangle Ink(Font font, string label)
         {
-            using (GraphicsPath path = new GraphicsPath())
+            Font measure = font;
+            Font temp = null;
+            if (Look.Cyrillic(label) && Look.EmbeddedFont != null && string.Equals(font.FontFamily.Name, Look.EmbeddedFont.Name, StringComparison.OrdinalIgnoreCase))
+                measure = temp = Look.FallbackMono(font.Size, font.Style, font.Unit);
+            try
             {
-                path.AddString(label, font.FontFamily, (int)font.Style, font.Size, PointF.Empty, StringFormat.GenericTypographic);
-                RectangleF ink = path.GetBounds();
-                return Rectangle.FromLTRB((int)Math.Floor(ink.Left), (int)Math.Floor(ink.Top), (int)Math.Ceiling(ink.Right), (int)Math.Ceiling(ink.Bottom));
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    path.AddString(label, measure.FontFamily, (int)measure.Style, measure.Size, PointF.Empty, StringFormat.GenericTypographic);
+                    RectangleF ink = path.GetBounds();
+                    return Rectangle.FromLTRB((int)Math.Floor(ink.Left), (int)Math.Floor(ink.Top), (int)Math.Ceiling(ink.Right), (int)Math.Ceiling(ink.Bottom));
+                }
             }
+            finally { if (temp != null) temp.Dispose(); }
         }
 
         // The icon's box and the label's letters in one half, 1 the pencil's and 2 the wave's, the pair in the middle of it.
         internal static Rectangle[] Layout(float s, int part, string label)
         {
-            using (Font font = LabelFont(s)) return Layout(s, part, Ink(font, label));
+            using (Font font = LabelFont(s, label)) return Layout(s, part, Ink(font, label));
         }
 
         private static Rectangle[] Layout(float s, int part, Rectangle ink)
@@ -939,7 +977,7 @@ namespace CapriDesktop
         private static void DrawLabel(Graphics graphics, string label, Font font, Rectangle box, Color colour)
         {
             Rectangle ink = Ink(font, label);
-            using (Brush brush = new SolidBrush(colour)) graphics.DrawString(label, font, brush, box.Left - ink.Left, box.Top - ink.Top, StringFormat.GenericTypographic);
+            using (Brush brush = new SolidBrush(colour)) Look.Draw(graphics, label, font, brush, box.Left - ink.Left, box.Top - ink.Top);
         }
 
         // The wave as five bars of square segments. Out of voice chat it's the whole wave; in voice chat the segments light up to
@@ -2699,7 +2737,7 @@ namespace CapriDesktop
 
         internal static Bitmap Frame(string task, IList<JobStep> steps, string busy, string outcome, string ending, bool caret, double fade, float s)
         {
-            string told = outcome == null ? "working on your task." : ending.Length > 0 ? ending : outcome == "done" ? "done." : "stopped.";
+            string told = outcome == null ? Said.In("working on your task.") : ending.Length > 0 ? Said.In(ending) : outcome == "done" ? Said.In("done.") : Said.In("stopped.");
             string status = Speaker + told;
             System.Text.StringBuilder every = new System.Text.StringBuilder(task + status + busy);
             foreach (JobStep step in steps) every.Append(step.Label);
@@ -2762,7 +2800,7 @@ namespace CapriDesktop
                         for (int i = 0; i < said.Count; i++)
                         {
                             int name = i == 0 ? Math.Min(said[i].Length, Speaker.Length - 1) : 0;
-                            if (name > 0) graphics.DrawString(said[i].Substring(0, name), bold, red, x, y, StringFormat.GenericTypographic);
+                            if (name > 0) Look.Draw(graphics, said[i].Substring(0, name), bold, red, x, y);
                             Look.Draw(graphics, said[i].Substring(name), text, ink, x + name * cw, y);
                             y += line;
                         }
@@ -2775,9 +2813,15 @@ namespace CapriDesktop
                         y += line;
                     }
                     if (running)
-                        using (Font small = Look.Mono(12 * s, FontStyle.Regular, GraphicsUnit.Pixel))
+                    {
+                        string esc = Said.In("ESC STOPS ME");
+                        using (Font small = Look.Mono(12 * s, FontStyle.Regular, GraphicsUnit.Pixel, esc))
                         using (Brush dim = new SolidBrush(Color.FromArgb(a, Look.Dim)))
-                            graphics.DrawString("ESC STOPS ME", small, dim, panel.Right - 15 * s - graphics.MeasureString("ESC STOPS ME", small, PointF.Empty, StringFormat.GenericTypographic).Width, y + 2 * s, StringFormat.GenericTypographic);
+                        {
+                            float escWidth = graphics.MeasureString(esc, small, PointF.Empty, StringFormat.GenericTypographic).Width;
+                            Look.Draw(graphics, esc, small, dim, panel.Right - 15 * s - escWidth, y + 2 * s);
+                        }
+                    }
                 }
                 return image;
             }
@@ -2907,7 +2951,7 @@ namespace CapriDesktop
         {
             if (scrollReply != Reply) { firstLine = 0; scrollReply = Reply; copied = false; }
             s = Math.Min(s, Math.Min(area.Width / 160f, area.Height / 150f));
-            string all = Speaker + (Reply ?? "") + (Heard ?? "");
+            string all = Speaker + (Prompt ?? "") + (Reply ?? "") + (Heard ?? "");
             using (Font text = Look.Mono(14 * s, FontStyle.Regular, GraphicsUnit.Pixel, all))
             using (Font heard = Look.Mono(14 * s, FontStyle.Italic, GraphicsUnit.Pixel, all))
             using (Font bold = Look.Mono(14 * s, FontStyle.Bold, GraphicsUnit.Pixel, all))
@@ -2973,7 +3017,7 @@ namespace CapriDesktop
                         {
                             string shown = lines[i].Substring(0, takes[i]);
                             int name = i == 0 ? Math.Min(takes[i], Speaker.Length - 1) : 0;
-                            if (name > 0) graphics.DrawString(shown.Substring(0, name), bold, red, x, row2, StringFormat.GenericTypographic);
+                            if (name > 0) Look.Draw(graphics, shown.Substring(0, name), bold, red, x, row2);
                             string words = shown.Substring(name);
                             float from = x + name * cw;
                             // An Arabic, Urdu, Persian or Hebrew line grows leftwards from the right edge as she types it. The whole

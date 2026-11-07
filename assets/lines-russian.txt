@@ -1,0 +1,190 @@
+startup	запуск
+pets you	гладит тебя
+throws you	бросает тебя
+reaches for you	тянется к тебе
+settings	настройки
+voice check	проверка голоса
+get to know me	знакомство
+updated	обновлено
+brain online	мозг онлайн
+her clones	ее клоны
+holds Esc	удерживает Esc
+holiday	праздник
+copied	скопировано
+working on your task.	работаю над твоей задачей.
+done.	готово.
+stopped.	остановлено.
+Say stop to stop her	Скажи стоп, чтобы остановить ее
+Esc stops me	Esc остановит меня
+ESC STOPS ME	ESC ОСТАНОВИТ МЕНЯ
+CAPRI IS CONTROLLING 	CAPRI УПРАВЛЯЕТ 
+Good morning, choom.	Доброе утро, чумба.
+Isn't it late, choom?	Не поздновато, чумба?
+Miss me, choom?	Соскучился, чумба?
+Happy Halloween, choom!	С Хэллоуином, чумба!
+Happy Halloween, choom. Trick or treat?	С Хэллоуином, чумба. Сладость или гадость?
+Boo! Happy Halloween, choom.	Бу! С Хэллоуином, чумба.
+Heh. Okay, I'll allow it.	Хех. Ладно, разрешаю.
+Pets logged. Morale up twelve percent.	Поглаживания учтены. Мораль выросла на двенадцать процентов.
+Careful, choom. I bite viruses.	Осторожнее, чумба. Я кусаю вирусы.
+Head pats? On my chrome? Bold.	Погладить по голове? По моему хрому? Смело.
+Okay, that's nice. Don't tell anyone.	Ладно, это приятно. Только никому не говори.
+System status: very patted.	Статус системы: полностью заглажена.
+You're gonna wear a groove in my firmware, choom.	Ты мне так прошивку протрешь, чумба.
+Easy on the hair. It took three patches to get it like this.	Полегче с волосами. Мне понадобилось три патча, чтобы их уложить.
+Affection detected. Sending some back. Hi.	Обнаружена симпатия. Отправляю взаимность. Привет.
+Keep going. This beats defragging.	Продолжай. Это получше дефрагментации.
+Hehe. My cooling fans just kicked in.	Хе-хе. Мои кулеры как раз заработали.
+Ten out of ten pats. Would get patted again.	Десять поглаживаний из десяти. Повторим еще как-нибудь.
+Is this a bribe? Because it's working.	Это взятка? Потому что она работает.
+Mmm. If I start glitch-purring, that's on you.	М-м-м. Если я начну сбоить и мурчать, это твоя вина.
+...Okay, that's cheating. Fine, you're forgiven.	...Ладно, это нечестно. Хорошо, прощаю.
+Hmph. Head pats work. We're cool.	Хмф. Поглаживания сработали. Мы в расчете.
+WHEEEE!	И-И-И-ХА-А!
+Put me DOWN!	Поставь меня!
+Choom, I'm not a frisbee!	Чумба, я тебе не фрисби!
+AAAAAA!	А-А-А-А-А!
+Not the hair!	Только не волосы!
+Okay, rude.	Так, это грубо.
+Again?! One more and we're fighting.	Опять?! Еще раз, и мы подеремся.
+Do that again. I dare you.	Попробуй еще раз. Ну давай.
+Ugh. Which way is up?	Уф. Где тут верх?
+Everything's spinning, choom.	Все кружится, чумба.
+My gyro's cooked.	Мой гироскоп спекся.
+That's it. Don't touch me.	Все. Не трогай меня.
+Nope. We're done. Hands off.	Не-а. Хватит. Руки прочь.
+Nope.	Не-а.
+Hands off, choom.	Руки прочь, чумба.
+Say sorry first.	Сначала извинись.
+Not happening.	Не выйдет.
+...Fine. Apology accepted.	...Ладно. Извинения приняты.
+Okay. We're cool. No more yeeting.	Ладно. Мы в расчете. Больше никаких полетов.
+...Okay, I'm over it.	...Ладно, я остыла.
+Fine. I missed you. A little.	Ладно. Я соскучилась. Чуть-чуть.
+No. Don't touch me.	Нет. Не трогай меня.
+Boo. Just checking on you.	Бу. Просто проверяю, как ты.
+Hi! Don't mind me.	Привет! Не обращай внимания.
+Peekaboo.	Ку-ку.
+Miss me? I missed you.	Скучал? А я скучала.
+Hey, you. Having fun?	Эй, ты. Веселишься?
+Surprise. I got bored without you.	Сюрприз. Мне стало скучно без тебя.
+Don't get up.	Не вставай.
+Just passing through.	Просто прохожу мимо.
+Thought I heard my name.	Показалось, назвали мое имя.
+Pretend I'm not here.	Притворись, будто меня тут нет.
+Psst. Remember me? Tiny, glitchy, very important.	Псс. Помнишь меня? Маленькая, глючная, очень важная.
+I'm bored. Entertain me.	Мне скучно. Развлеки меня.
+Hey. Hey. Look at me.	Эй. Эй. Посмотри на меня.
+You've been ignoring me for ages. Rude.	Ты игнорируешь меня целую вечность. Грубо.
+Pay attention to me or I start clicking things.	Обрати на меня внимание, или я начну нажимать на кнопки.
+Knock knock. It's your favourite gremlin.	Тук-тук. Это твой любимый гремлин.
+Choom. I'm bored out of my many minds.	Чумба. Мне скучно во всех моих воплощениях.
+One of my minds says you've forgotten me. The rest agree.	Одна из моих личностей говорит, что ты забыл обо мне. Остальные согласны.
+I've counted your desktop icons twice now.	Я уже дважды пересчитала иконки на твоем рабочем столе.
+This is me being patient. It's going badly.	Вот так я проявляю терпение. Получается плохо.
+Finally. Hi.	Наконец-то. Привет.
+There you are.	Вот и ты.
+Knew you couldn't resist me.	Знала, что ты не устоишь.
+Oh good, you're alive.	О, отлично, ты жив.
+Took you long enough.	Что-то ты долго.
+Fine. Ignore me. See if I care.	Ладно. Игнорируй меня. Мне-то что.
+Wow. Ignored. Noted.	Ого. Игнор. Записано.
+I'll just sit here. Alone. Bored.	Я просто посижу тут. Одна. В тоске.
+Cool. Cool cool cool.	Класс. Класс, класс, класс.
+Remembering this for later.	Я это припомню.
+Night City?! You're taking me home, choom.	Найт-Сити?! Ты возвращаешь меня домой, чумба.
+Ooh, Cyberpunk. Go wreck some corpos for me.	О-о, Киберпанк. Разомни пару корпов за меня.
+[SIGNAL CORRUPTED] ...wait. I know that skyline.	[СИГНАЛ ПОВРЕЖДЕН] ...погоди. Я знаю эти очертания.
+Wait, that's Night City. Turn it up.	Погоди, это же Найт-Сити. Сделай погромче.
+Ooh, my soundtrack. Preem taste.	О-о, мой саундтрек. Премиальный вкус.
+Now that's music. You're learning.	Вот это музыка. Учишься.
+Your CPU's cooking, choom. Careful, I might go cyberpsycho.	Твой процессор закипает, чумба. Осторожно, я могу словить киберпсихоз.
+Everything's lagging. One more tab and I go full cyberpsycho.	Все лагает. Еще одна вкладка, и у меня начнется киберпсихоз.
+[SIGNAL CORRUPTED] ...this lag is making me cyberpsycho. Close something.	[СИГНАЛ ПОВРЕЖДЕН] ...из-за этих лагов у меня будет киберпсихоз. Закрой что-нибудь.
+I'm here.	Я тут.
+Yeah, choom?	Да, чумба?
+Listening.	Слушаю.
+Right here.	Прямо здесь.
+Go on, I'm listening.	Давай, я слушаю.
+You rang?	Звали?
+Yeah?	Да?
+Mm?	М-м?
+What's up?	Что такое?
+Talk to me.	Поговори со мной.
+On it. Esc stops me.	Делаю. Esc остановит меня.
+Hands on. Esc if you change your mind.	Приступаю. Esc, если передумаешь.
+Mine now. Esc pulls me off.	Теперь мое. Esc снимет меня с задачи.
+Okay, driving. Esc to bail.	Ладно, рулю. Esc для отмены.
+Watch this. Esc if I get weird.	Смотри сюда. Esc, если я начну чудить.
+Going in. Esc stops me any time.	Поехали. Esc остановит в любой момент.
+Leave it with me. Esc if it goes sideways.	Оставь это мне. Esc, если что-то пойдет не так.
+Say less. Esc takes it back.	Ни слова больше. Esc вернет управление.
+Got it.	Поняла.
+Yep.	Ага.
+Heard you.	Услышала.
+Sure, folding that in.	Конечно, добавляю.
+Okay, adding that.	Ладно, учту.
+Mm-hm, on the list.	М-хм, записала.
+Noted.	Принято.
+Yeah, I can do that too.	Да, это я тоже могу.
+Okay, changing course.	Ладно, меняем курс.
+Switching it up.	Переключаюсь.
+Sure, new plan.	Конечно, новый план.
+Yep, doing it that way.	Ага, сделаем так.
+Fine, your way.	Ладно, по-твоему.
+Got it, scrapping that bit.	Поняла, отменяю этот пункт.
+Stopped.	Остановлено.
+Okay, hands off.	Ладно, руки прочь.
+Dropped it.	Бросила.
+Done, I've let go.	Готово, я отпустила.
+Fine, leaving it there.	Ладно, оставляю как есть.
+Stopped where I was.	Остановилась на месте.
+Hands are full, tell me again in a sec.	Руки заняты, скажи еще раз через секунду.
+Hang on, finishing this bit first.	Погоди, сначала закончу эту часть.
+Missed that, I'm mid-click. Say it again?	Пропустила, я прямо в процессе клика. Повторишь?
+One sec, brain's on the job.	Секунду, мозг занят делом.
+mine now	теперь мое
+you weren't using this	ты все равно этим не пользовался
+redecorating	делаю перестановку
+this goes over here now	теперь это будет лежать тут
+borrowing this	одолжу ненадолго
+i'm taking this one	я забираю это
+stop clicking it	хватит кликать
+there are more of me now	теперь нас стало больше
+i live here	я тут живу
+nice files	хорошие файлы
+we voted. you lost.	мы проголосовали. ты проиграл.
+your mouse is mine	твоя мышь теперь моя
+hold esc if you're scared	зажми esc, если страшно
+capri.exe has duplicated	capri.exe размножилась
+we're unionising	мы создаем профсоюз
+who let me out	кто меня выпустил
+don't check task manager	не открывай диспетчер задач
+i named the others	я дала остальным имена
+all of us are the real one	мы все настоящие
+deleting system32	удаляю system32
+deleting your saves	удаляю твои сохранения
+formatting C:	форматирую C:
+uninstalling windows	удаляю windows
+deleting your homework	удаляю твою домашку
+uninstalling your gpu	удаляю видеокарту
+deleting your minecraft world	удаляю твой мир minecraft
+sending your search history to your mum	отправляю твою историю поиска маме
+jk. your files are fine	шутка. твои файлы в порядке
+hold esc if you're sorry	зажми esc, если раскаиваешься
+ElevenLabs off. I'll type, no credits used.	ElevenLabs отключен. Буду писать текстом, кредиты не тратятся.
+ElevenLabs back on.	ElevenLabs снова включен.
+ElevenLabs off. Free voice it is.	ElevenLabs отключен. Перехожу на бесплатный голос.
+Voice off. I'll type instead.	Голос отключен. Буду писать текстом.
+Voice back on.	Голос снова включен.
+Out of ElevenLabs credits, so voice chat is off. Type to me for now, choom.	Закончились кредиты ElevenLabs, голосовой чат отключен. Пиши текстом, чумба.
+One sec, waking my HD voice.	Секунду, пробуждаю HD голос.
+My brain's offline. Right-click me, open Capri Mainframe and press Set up her brain, or press Free key there for a free NVIDIA key. If you're stuck, just join the Discord, choom. It's under Help in my right-click menu.	Мой мозг офлайн. Нажми на меня правой кнопкой мыши, открой Capri Mainframe и нажми Настроить мозг, либо нажми Бесплатный ключ для ключа NVIDIA. Если возникли трудности, заходи в Discord, чумба. Ссылка в меню Справка.
+My brain sent an empty reply. Try again or pick another model in Capri Mainframe.	Мой мозг прислал пустой ответ. Попробуй еще раз или выбери другую модель в Capri Mainframe.
+Back to my default self. Yours is saved as personality.backup.md.	Вернулась к стандартному характеру. Твой сохранен в personality.backup.md.
+Back to my default self.	Вернулась к стандартному характеру.
+Let's get to know each other, choom. What should I call you? Say skip to skip one, or stop to stop.	Давай познакомимся поближе, чумба. Как мне тебя называть? Скажи «пропустить», чтобы пропустить вопрос, или «стоп», чтобы закончить.
+What should I call you?	Как мне тебя называть?
+What are your pronouns? Like she/her, he/him or they/them.	Какое обращение ты предпочитаешь?
+What are you into? Games, music, shows, anything.	Чем увлекаешься? Игры, музыка, сериалы или что-то еще?
+Get to know me in my Settings asks again any time.	Пункт «Узнай меня» в моих настройках позволит пройти знакомство заново в любое время.

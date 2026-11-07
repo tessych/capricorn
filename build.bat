@@ -8,6 +8,6 @@ if %ERRORLEVEL% equ 0 (
     echo [Capri] Сборка успешно завершена! Исполняемый файл: out\windows\Capri.exe
 ) else (
     echo.
-    echo [Capri] Ошибка сборки. Убедись, что на Windows установлен .NET Framework 4.8.
+    echo [Capri] Ошибка сборки. Проверь вывод ошибки выше. Требуется Windows 10/11 с .NET Framework 4.8.
 )
 pause
