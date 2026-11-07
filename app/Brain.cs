@@ -336,43 +336,27 @@ namespace CapriDesktop
         internal volatile string CodeNote = "Capri code: Claude Haiku 5.5.";
         internal Cloud(string key, string model) { Code = IsCode(key); Key = Code ? key.Trim().ToUpperInvariant() : key; Kind = KindOf(Key); Model = model; }
         internal Cloud(int port, string model, string address = null) { Host = Brain.LocalAddress(address) ?? Brain.LocalHost(port); Port = new Uri(Host).Port; Kind = "local"; Model = model; }
-        internal bool Claude { get { return Kind == "anthropic"; } }
-        // Their own Claude or ChatGPT plan, through Claude Code or Codex on their PC.
-        internal bool Plan { get { return Plans.Is(Kind); } }
-        internal string Name { get { return Kind == "local" ? Brain.ServerName(Port) : Kind == "anthropic" ? "Claude" : Kind == "google" ? "Gemini" : Kind == "openai" ? "ChatGPT" : Plan ? Plans.App(Kind) : Company; } }
-        internal string Company { get { return Kind == "local" ? Name : CompanyOf(Kind); } }
-        internal static string CompanyOf(string kind) { return kind == "anthropic" || kind == "claudecode" ? "Anthropic" : kind == "deepseek" ? "DeepSeek" : kind == "nvidia" ? "NVIDIA" : kind == "google" ? "Google AI" : kind == "openrouter" ? "OpenRouter" : kind == "openai" || kind == "codex" ? "OpenAI" : "That provider"; }
-        internal string Source { get { return Kind + (Kind == "local" ? "|" + Host : "") + "|" + Model; } }
-        internal string Sight { get { return Kind == "local" || Kind == "google" || Kind == "openrouter" ? Source : Model; } }
+        internal bool Claude { get { return false; } }
+        internal bool Plan { get { return false; } }
+        internal string Name { get { return "DeepSeek"; } }
+        internal string Company { get { return "DeepSeek"; } }
+        internal static string CompanyOf(string kind) { return "DeepSeek"; }
+        internal string Source { get { return "deepseek|" + Model; } }
+        internal string Sight { get { return Model; } }
 
-        internal static bool IsCode(string key) { return Regex.IsMatch((key ?? "").Trim().ToUpperInvariant(), @"\ACAPRI(-[0-9A-HJKMNP-TV-Z]{4}){4}\z"); }
+        internal static bool IsCode(string key) { return false; }
 
-        internal void ReadCode(WebHeaderCollection headers)
-        {
-            if (!Code) return;
-            decimal left;
-            if (!decimal.TryParse(headers["capri-code-left"], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out left) || left < 0) return;
-            string note = "Capri code: Claude Haiku 5.5, $" + left.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " left";
-            DateTime ends;
-            if (DateTime.TryParse(headers["capri-code-expires"], System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out ends)) note += " until " + ends.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture);
-            CodeNote = note + ".";
-        }
+        internal void ReadCode(WebHeaderCollection headers) { }
 
         internal static string KindOf(string key)
         {
             if (string.IsNullOrEmpty(key)) return null;
-            if (Plans.KindOf(key) != null) return Plans.KindOf(key);
-            // Google AI Studio gives out keys that start AQ. now (Senshy, Echo, ALASTOR and lluvia.flac, 1 Nov).
-            if (key.StartsWith("AIza", StringComparison.Ordinal) || key.StartsWith("AQ.", StringComparison.Ordinal)) return "google";
-            if (key.StartsWith("sk-or-", StringComparison.Ordinal)) return "openrouter";
-            if (key.StartsWith("sk-nous-", StringComparison.Ordinal)) return null;
-            if (key.StartsWith("sk-ant-", StringComparison.Ordinal) || IsCode(key)) return "anthropic";
-            if (key.StartsWith("nvapi-", StringComparison.Ordinal)) return "nvidia";
-            if (Regex.IsMatch(key, "^sk-[0-9a-f]{32}$")) return "deepseek";
-            return key.StartsWith("sk-", StringComparison.Ordinal) ? "openai" : null;
+            string trimmed = key.Trim();
+            if (Regex.IsMatch(trimmed, @"^sk-[0-9a-zA-Z]{20,64}$") || Regex.IsMatch(trimmed, @"^sk-[0-9a-f]{32}$")) return "deepseek";
+            return null;
         }
 
-        internal static bool MediumKind(string kind) { return kind == "nvidia" || kind == "google" || kind == "openrouter"; }
+        internal static bool MediumKind(string kind) { return false; }
     }
 
     // Their Claude or ChatGPT plan under MAX INTELLIGENCE, saved like a key but holding only which app runs it. Running the app
@@ -383,9 +367,9 @@ namespace CapriDesktop
         internal static readonly string[] ClaudeModels = { "haiku", "sonnet", "opus" };
         internal static readonly string[] CodexModels = { "default" };
 
-        internal static string KindOf(string key) { return key == ClaudeKey ? "claudecode" : key == CodexKey ? "codex" : null; }
+        internal static string KindOf(string key) { return null; }
 
-        internal static bool Is(string kind) { return kind == "claudecode" || kind == "codex"; }
+        internal static bool Is(string kind) { return false; }
 
         internal static string App(string kind) { return kind == "codex" ? "Codex" : "Claude Code"; }
 
@@ -451,21 +435,21 @@ namespace CapriDesktop
         internal static string DailyGone { get { return DailyStart + " They reset tomorrow, or add another key " + BrainMenu + "."; } }
         internal const string NewKey = "Key rejected. Make a new Google AI Studio key and paste it.";
         internal const string Unserved = "Google doesn't serve Gemini where you are. Press Free key for a free NVIDIA key.";
-        internal const string NoCredits = "No credits on this key. Add credits on the service's site, or press Free key for a free NVIDIA key.";
-        internal const string PlusRejected = "Key rejected. ChatGPT Plus doesn't include API use, so make a key with credits at platform.openai.com.";
-        internal const string NotAKey = "That isn't a Gemini, OpenRouter, NVIDIA, OpenAI, Claude or DeepSeek key.";
-        internal const string NoFreeModels = "OpenRouter has no free chat models on this key. Try Refresh or MAX INTELLIGENCE.";
+        internal const string NoCredits = "Закончился баланс на ключе DeepSeek. Пополни баланс на platform.deepseek.com.";
+        internal const string PlusRejected = "Key rejected.";
+        internal const string NotAKey = "Введи действительный API-ключ DeepSeek (начинается с sk-...).";
+        internal const string NoFreeModels = "No models available.";
         // HTTP 451, or a block page where the API's answer should be: the service turns away their country or network, so every key
         // fails the same way (ticket 84, coshac1 on NVIDIA; ticket 88, Void on OpenRouter; both in Russia).
-        internal const string Blocked = "The service is blocked where you are, so a new key won't help. Pick another service under Free key, or Built-in under BRAIN, which runs on your PC.";
+        internal const string Blocked = "Сервис недоступен из твоей сети. Проверь подключение или VPN.";
         private static readonly Regex BlockPage = new Regex(@"security policy|access restricted|unsupported[_ ]country|country, region,? or territory|(not available|not supported|unavailable) in your (country|region|location)", RegexOptions.IgnoreCase);
-        internal const string NoEyes = "I can't see your screen with this brain, and no seeing Ollama model is installed. Pick a model with vision under BRAIN in Capri Mainframe, or install one with ollama pull gemma4:e4b so I can borrow its eyes.";
+        internal const string NoEyes = "Для работы со зрением требуется модель с поддержкой vision.";
 
-        internal static string Sightless(Cloud remote) { return remote.Model + " can't see screens. In Capri Mainframe, pick a model that can" + (remote.Kind == "nvidia" ? ", like nvidia/nemotron-3.5-super-vl-120b-a12b." : remote.Kind == "local" ? ", or turn pictures on in your server." : "."); }
+        internal static string Sightless(Cloud remote) { return remote.Model + " не умеет анализировать экран."; }
         private const string Parts = "@capri-image@";
-        internal const string Declined = "[SIGNAL CORRUPTED] Lost that one in the static. Ask me something else?";
-        internal const string Stuck = " If you're stuck, just join the Discord, choom. It's under Help in my right-click menu.";
-        internal const string Offline = "My brain's offline. Right-click me, open Capri Mainframe and press Set up her brain, or press Free key there for a free NVIDIA key." + Stuck;
+        internal const string Declined = "[SIGNAL CORRUPTED] Сигнал потерян в помехах. Спроси что-нибудь еще?";
+        internal const string Stuck = " Если что-то не работает, загляни в Help в контекстном меню.";
+        internal const string Offline = "Мой мозг оффлайн. Нажми правой кнопкой по мне, открой Capri Mainframe > BRAIN и подключи API-ключ DeepSeek." + Stuck;
         private static readonly string[] Favourites = { "gemma4:e4b", "gemma4:e2b", "qwen3:4b-instruct-2507", "qwen3.5:4b", "qwen3:4b", "llama3.2:3b", "qwen3:1.7b", "llama3.2:1b", "gemma3:1b" };
         private readonly List<ChatMessage> history = new List<ChatMessage>();
         private readonly object gate = new object();
@@ -1830,35 +1814,20 @@ namespace CapriDesktop
         internal static bool ModelFits(string kind, string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return false;
-            if (Plans.Is(kind)) return Plans.Models(kind).Contains(id);
-            if (kind == "google") return id.StartsWith("gemini-", StringComparison.Ordinal);
-            if (kind == "openai") return Regex.IsMatch(id, @"^(gpt-|o\d|chatgpt-)");
-            if (kind == "anthropic") return id.StartsWith("claude-", StringComparison.Ordinal);
-            if (kind == "deepseek") return id.StartsWith("deepseek-", StringComparison.Ordinal);
-            return true;
+            return id.StartsWith("deepseek-", StringComparison.Ordinal);
         }
 
         private static bool Chats(string kind, string id)
         {
-            if (kind == "google") return id.StartsWith("gemini-", StringComparison.Ordinal) && !Regex.IsMatch(id, @"embed|image|audio|tts|live|robotics|computer-use|aqa|transcribe|banana|omni", RegexOptions.IgnoreCase);
-            if (kind == "openai") return Regex.IsMatch(id, @"^(gpt-|o\d)") && !Regex.IsMatch(id, @"audio|realtime|tts|transcribe|image|search|embed|instruct|codex|moderation|-\d{4}-\d{2}-\d{2}$");
-            if (kind == "nvidia") return Regex.IsMatch(id, @"instruct|chat|-it\b|-it-|gpt-oss|kimi|glm|deepseek|qwen|qwq|llama|gemma|mistral|mixtral|magistral|ministral|nemotron|phi-|granite|minimax|hermes|seed|jamba|falcon|solar|olmo|exaone", RegexOptions.IgnoreCase)
-                && !Regex.IsMatch(id, @"embed|rerank|reward|guard|safety|topic-control|parse|clip|retriev|translate|deplot|kosmos|vila|fuyu|neva|calibration|cod|chatqa|palmyra|cosmos|riva|diffusion|recurrent|llama2|-2b$|detect|synthetic|video|ocr|asr|tts|speech|audio|image|segment|depth|pose|classif", RegexOptions.IgnoreCase);
-            return true;
+            return id.StartsWith("deepseek-", StringComparison.Ordinal);
         }
 
         internal static string Address(string kind, string path)
         {
-            if (kind == "anthropic") return Anthropic + "/v1" + path;
-            if (kind == "deepseek") return DeepSeek + path;
-            if (kind == "nvidia") return Nvidia + "/v1" + path;
-            if (kind == "google") return Google + path;
-            if (kind == "openrouter") return OpenRouter + path;
-            if (kind == "openai") return OpenAi + "/v1" + path;
-            throw new BrainException("That key's provider isn't supported.", true);
+            return DeepSeek + path;
         }
 
-        internal static string ClaudeAddress(string key, string path) { return (Cloud.IsCode(key) ? Codes : Anthropic) + "/v1" + path; }
+        internal static string ClaudeAddress(string key, string path) { return DeepSeek + path; }
 
         internal static bool Stalled(Exception error)
         {
@@ -1869,31 +1838,15 @@ namespace CapriDesktop
 
         internal static string Next(string current, List<string> models, ICollection<string> skip)
         {
-            foreach (string id in NvidiaPicks) if (id != current && !skip.Contains(id) && (models == null || models.Contains(id))) return id;
+            foreach (string id in models ?? new List<string>()) if (id != current && !skip.Contains(id)) return id;
             return null;
         }
 
         internal static string DefaultCloudModel(string kind, List<string> models)
         {
-            if (models == null || models.Count == 0) return null;
-            if (kind == "anthropic") return models.Contains(Fastest) ? Fastest : models[0];
-            if (kind == "deepseek") return models.Contains("deepseek-flash") ? "deepseek-flash" : models[0];
-            if (kind == "nvidia") { foreach (string id in NvidiaPicks) if (models.Contains(id)) return id; return models[0]; }
-            if (kind == "google")
-            {
-                string flash = models[0];
-                foreach (string flashCandidate in models)
-                    if (FlashPick(flashCandidate) < FlashPick(flash) || (FlashPick(flashCandidate) == FlashPick(flash) && GeminiVersion(flashCandidate).CompareTo(GeminiVersion(flash)) > 0)) flash = flashCandidate;
-                return flash;
-            }
-            if (kind == "openrouter")
-            {
-                string free = models[0];
-                foreach (string freeCandidate in models)
-                    if (RouterPick(Listed(kind, freeCandidate) ?? new CloudModel { Id = freeCandidate }) < RouterPick(Listed(kind, free) ?? new CloudModel { Id = free })) free = freeCandidate;
-                return free;
-            }
-            foreach (string id in models) if (id.StartsWith("gpt-", StringComparison.Ordinal) && id.EndsWith("-mini", StringComparison.Ordinal)) return id;
+            if (models == null || models.Count == 0) return "deepseek-chat";
+            if (models.Contains("deepseek-chat")) return "deepseek-chat";
+            if (models.Contains("deepseek-reasoner")) return "deepseek-reasoner";
             return models[0];
         }
 

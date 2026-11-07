@@ -431,9 +431,9 @@ namespace CapriDesktop
             setup = Make("Set up her brain", 28, 226, 170, 28, delegate { if (capri.SettingUp) capri.CancelSetup(); else capri.SetUpBrain(); });
             setup.Accent = Cyan;
             setup.Loud = true;
-            hint = Caption("Have Ollama? Open it, then press Refresh.", 28, 264, Look.Mono(9f, FontStyle.Italic, GraphicsUnit.Point), Faint);
-            tierNote = Caption("Pick one. Only one brain runs at a time.", 28, 168, Look.Mono(8.5f, FontStyle.Italic, GraphicsUnit.Point), Faint);
-            string[,] tiers = { { "NORMAL", "Free · local model" }, { "MEDIUM INTELLIGENCE", "Free" }, { "MAX INTELLIGENCE", "Key or plan" } };
+            hint = Caption("Используется DeepSeek API (api.deepseek.com)", 28, 264, Look.Mono(9f, FontStyle.Italic, GraphicsUnit.Point), Faint);
+            tierNote = Caption("DeepSeek API (api.deepseek.com)", 28, 168, Look.Mono(8.5f, FontStyle.Italic, GraphicsUnit.Point), Faint);
+            string[,] tiers = { { "NORMAL", "Отключено" }, { "MEDIUM", "Отключено" }, { "DEEPSEEK", "api.deepseek.com" } };
             for (int i = 0; i < rungs.Length; i++)
             {
                 int picked = i;
@@ -448,8 +448,16 @@ namespace CapriDesktop
                 Controls.Add(rung);
                 rungs[i] = rung;
             }
-            rungs[0].Flag = "Start with this!";
-            rungs[0].FlagFont = Type(9f);
+            setup.Visible = false;
+            hint.Visible = false;
+            freeKey.Visible = false;
+            planKey.Visible = false;
+            rungs[0].Visible = false;
+            rungs[1].Visible = false;
+            rungs[2].Text = "DEEPSEEK";
+            rungs[2].Hint = "api.deepseek.com";
+            rungs[2].Bounds = new Rectangle(28, 184, 328, 24);
+            rungs[2].Checked = true;
             freeKeyMenu = Dropdown();
             freeKeyMenu.AccessibleName = "Free key providers";
             ToolStripMenuItem nvidiaKey = Choice("NVIDIA · free · often slow at busy times", false, delegate { capri.OpenFreeKeyPage(); });
@@ -3543,12 +3551,12 @@ namespace CapriDesktop
             syncing = true;
             for (int i = 0; i < rungs.Length; i++) rungs[i].Checked = i == tier;
             syncing = false;
-            string tail = tier == 1 ? nvidiaTail : tier == 2 ? paidTail : null;
+            string tail = paidTail ?? nvidiaTail;
             textSaved = tail != null;
-            textEntry.Box.AccessibleName = tier == 1 ? "NVIDIA, Google AI Studio (Gemini) or OpenRouter API key" : "Google AI, OpenRouter, NVIDIA, OpenAI, Anthropic or DeepSeek API key";
+            textEntry.Box.AccessibleName = "API-ключ DeepSeek";
             textEntry.AccessibleName = textEntry.Box.AccessibleName;
-            tierNote.Text = tier == 1 ? mediumKind == "nvidia" ? "Most NVIDIA models can't see your screen." : "NVIDIA, Gemini, OpenRouter" : tier == 2 ? "Gemini, OpenRouter, ChatGPT, Claude, DeepSeek" : "Pick one. Only one brain runs at a time.";
-            textEntry.Cue = textSaved ? (tier == 2 && paidPlan ? "Using your " + tail : "Key saved, ends " + tail) : tier == 1 ? "NVIDIA / Google AI Studio / OpenRouter" : "Paste a brain API key";
+            tierNote.Text = "DeepSeek API (api.deepseek.com)";
+            textEntry.Cue = textSaved ? "Ключ DeepSeek сохранен (заканчивается на " + tail + ")" : "Вставь API-ключ DeepSeek (sk-...)";
             RelabelText();
             Arrange(expanded);
         }

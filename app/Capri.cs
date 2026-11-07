@@ -10446,14 +10446,12 @@ namespace CapriDesktop
 
         private Cloud TierCloud()
         {
-            if (preferences.Tier == 0 && preferences.ProviderOn && brain.Server != null) return null;
-            if (preferences.Tier == 0 && preferences.BrainPort > 0 && preferences.BrainPort <= 65535 && !string.IsNullOrEmpty(preferences.LocalModel)) return new Cloud(preferences.BrainPort, preferences.LocalModel, preferences.BrainAddress);
-            string key = Voice.Unprotect(preferences.Tier == 1 ? preferences.NvidiaKey : preferences.Tier == 2 ? preferences.PaidKey : null);
-            string model = preferences.Tier == 1 ? preferences.NvidiaModel : preferences.PaidModel;
+            string key = Voice.Unprotect(preferences.PaidKey ?? preferences.TextKey ?? preferences.NvidiaKey);
+            string model = preferences.PaidModel ?? preferences.TextModel ?? preferences.NvidiaModel;
             string kind = Cloud.KindOf(key);
-            if (kind == null || preferences.Tier == 1 && !Cloud.MediumKind(kind)) return null;
-            bool fits = Brain.ModelFits(kind, model) && (preferences.Tier != 1 || kind != "openrouter" || model.EndsWith(":free", StringComparison.Ordinal));
-            return new Cloud(key, fits ? model : null);
+            if (kind == null) return null;
+            bool fits = Brain.ModelFits(kind, model);
+            return new Cloud(key, fits ? model : "deepseek-chat");
         }
 
         private void Mirror()
@@ -10515,12 +10513,9 @@ namespace CapriDesktop
             ++providerListing;
             ++cloudListing;
             key = (key ?? "").Trim();
-            if (Cloud.IsCode(key)) key = key.ToUpperInvariant();
             string kind = Cloud.KindOf(key);
-            if (kind == null) { TextProblem(key.StartsWith("sk-nous-", StringComparison.Ordinal) ? "Nous Portal keys aren't supported yet." : Brain.NotAKey, true); return; }
-            if (targetTier == 1 && !Cloud.MediumKind(kind)) { mainframe.OfferPaidText(key); return; }
-            if (targetTier == 0) targetTier = kind == "nvidia" ? 1 : 2;
-            ListCloud(key, true, targetTier);
+            if (kind == null) { TextProblem(Brain.NotAKey, true); return; }
+            ListCloud(key, true, 2);
         }
 
         private void TextProblem(string problem, bool connecting)
@@ -10542,17 +10537,13 @@ namespace CapriDesktop
             brain.Remote = null;
             brain.Model = null;
             cloudModels = null;
-            if (preferences.Tier == 1)
-            {
-                preferences.NvidiaKey = null;
-                preferences.NvidiaModel = null;
-            }
-            else
-            {
-                preferences.PaidKey = null;
-                preferences.PaidModel = null;
-            }
-            preferences.Tier = 0;
+            preferences.PaidKey = null;
+            preferences.PaidModel = null;
+            preferences.TextKey = null;
+            preferences.TextModel = null;
+            preferences.NvidiaKey = null;
+            preferences.NvidiaModel = null;
+            preferences.Tier = 2;
             LoadProvider();
             Mirror();
             SavePreferences();
