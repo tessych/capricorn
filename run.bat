@@ -1,7 +1,10 @@
 @echo off
+setlocal
 cd /d "%~dp0"
-set "PYW="
-for %%v in (3.13 3.12 3.11 3.14) do if not defined PYW py -%%v -c "" >nul 2>nul && set "PYW=pyw -%%v"
-if not defined PYW where pyw >nul 2>nul && set "PYW=pyw"
-if not defined PYW set "PYW=pythonw"
-start "" %PYW% main.py
+if not exist "%~dp0out\windows\Capri.exe" (
+    echo [Capri] Capri.exe не найден. Запускаю сборку...
+    call "%~dp0build.bat"
+)
+if exist "%~dp0out\windows\Capri.exe" (
+    start "" "%~dp0out\windows\Capri.exe"
+)

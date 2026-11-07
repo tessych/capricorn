@@ -1,15 +1,5 @@
-# личные настройки (создаются при первом запуске из настроек по умолчанию в main.py)
-config.json
-
-# скачиваемая модель распознавания речи — ставится через setup.bat
-models/
-
-# журнал, отчёты диагностики, образцы голоса — личные данные
-capri.log
-reports/
-samples/
-
-# служебное
-__pycache__/
-*.pyc
-*.tmp
+out/
+cross/bin/
+cross/obj/
+node_modules/
+worker/.codes-secret
