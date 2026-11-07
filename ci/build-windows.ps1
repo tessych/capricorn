@@ -2,11 +2,21 @@ param([string]$OutputDirectory, [switch]$SmokeTest, [int]$SmokeSeconds = 60, [sw
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
+if (-not (Test-Path -LiteralPath (Join-Path $framework 'csc.exe'))) {
+    $framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319'
+}
 $compiler = Join-Path $framework 'csc.exe'
 $wpf = Join-Path $framework 'WPF'
-$winmd = Get-ChildItem -LiteralPath (Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\UnionMetadata') -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^\d+(\.\d+)+$' } | Sort-Object { [version]$_.Name } -Descending | ForEach-Object { Join-Path $_.FullName 'Windows.winmd' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+$kitsDirs = @(
+    (Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\UnionMetadata'),
+    (Join-Path $env:ProgramFiles 'Windows Kits\10\UnionMetadata')
+) | Where-Object { Test-Path -LiteralPath $_ }
+$winmd = $kitsDirs | ForEach-Object { Get-ChildItem -LiteralPath $_ -Directory -ErrorAction SilentlyContinue } | Where-Object { $_.Name -match '^\d+(\.\d+)+$' } | Sort-Object { [version]$_.Name } -Descending | ForEach-Object { Join-Path $_.FullName 'Windows.winmd' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 if (-not $winmd) {
     $systemMetadata = Join-Path $env:WINDIR 'System32\WinMetadata'
+    if (-not (Test-Path -LiteralPath $systemMetadata) -and (Test-Path -LiteralPath (Join-Path $env:WINDIR 'SysNative\WinMetadata'))) {
+        $systemMetadata = Join-Path $env:WINDIR 'SysNative\WinMetadata'
+    }
     if (Test-Path -LiteralPath (Join-Path $systemMetadata 'Windows.winmd')) {
         $winmd = @(Join-Path $systemMetadata 'Windows.winmd')
     } elseif (Test-Path -LiteralPath $systemMetadata) {
