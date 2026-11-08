@@ -1,3 +1,7 @@
+#if LINUX_CROSS
+extern alias UAC;
+extern alias FC;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +16,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Automation;
 using System.Windows.Forms;
+#if LINUX_CROSS
+using UAC::Windows.Media.Control;
+#else
 using Windows.Media.Control;
+#endif
 
 namespace CapriDesktop
 {
@@ -127,11 +135,29 @@ namespace CapriDesktop
             return Regex.Replace(id, @"\.exe$", "", RegexOptions.IgnoreCase);
         }
 
+#if LINUX_CROSS
+        private static Task<T> WinRtTask<T>(FC::Windows.Foundation.IAsyncOperation<T> op)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            op.Completed = (info, status) =>
+            {
+                if (status == FC::Windows.Foundation.AsyncStatus.Completed) tcs.TrySetResult(info.GetResults());
+                else if (status == FC::Windows.Foundation.AsyncStatus.Canceled) tcs.TrySetCanceled();
+                else tcs.TrySetException(new Exception("WinRT operation failed"));
+            };
+            return tcs.Task;
+        }
+#endif
+
         private static GlobalSystemMediaTransportControlsSessionManager Manager()
         {
             if (manager == null)
             {
+#if LINUX_CROSS
+                Task<GlobalSystemMediaTransportControlsSessionManager> asking = WinRtTask(GlobalSystemMediaTransportControlsSessionManager.RequestAsync());
+#else
                 Task<GlobalSystemMediaTransportControlsSessionManager> asking = GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask();
+#endif
                 if (asking.Wait(5000)) manager = asking.Result;
             }
             return manager;
@@ -224,7 +250,11 @@ namespace CapriDesktop
         private static Tune Describe(GlobalSystemMediaTransportControlsSession session)
         {
             Tune tune = new Tune { Session = session, App = session.SourceAppUserModelId ?? "", ReadAt = Now };
+#if LINUX_CROSS
+            Task<GlobalSystemMediaTransportControlsSessionMediaProperties> asking = WinRtTask(session.TryGetMediaPropertiesAsync());
+#else
             Task<GlobalSystemMediaTransportControlsSessionMediaProperties> asking = session.TryGetMediaPropertiesAsync().AsTask();
+#endif
             GlobalSystemMediaTransportControlsSessionMediaProperties song = asking.Wait(2000) ? asking.Result : null;
             if (song != null)
             {
@@ -237,9 +267,15 @@ namespace CapriDesktop
             {
                 tune.Changing = info.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Changing;
                 tune.Playing = info.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing || tune.Changing;
+#if LINUX_CROSS
+                var kind = info.PlaybackType;
+                tune.Music = kind.HasValue && (int)kind.Value == 1;
+                tune.Video = kind.HasValue && (int)kind.Value == 2;
+#else
                 Windows.Media.MediaPlaybackType? kind = info.PlaybackType;
                 tune.Music = kind.HasValue && kind.Value == Windows.Media.MediaPlaybackType.Music;
                 tune.Video = kind.HasValue && kind.Value == Windows.Media.MediaPlaybackType.Video;
+#endif
                 GlobalSystemMediaTransportControlsSessionPlaybackControls controls = info.Controls;
                 if (controls != null)
                 {
@@ -292,7 +328,11 @@ namespace CapriDesktop
             {
                 try
                 {
+#if LINUX_CROSS
+                    FC::Windows.Foundation.IAsyncOperation<bool> asked = null;
+#else
                     Windows.Foundation.IAsyncOperation<bool> asked = null;
+#endif
                     if (what == "previous") asked = session.TrySkipPreviousAsync();
                     else if (what == "next") asked = session.TrySkipNextAsync();
                     else if (what == "play") asked = tune.CanPlay || !tune.CanToggle ? session.TryPlayAsync() : session.TryTogglePlayPauseAsync();
@@ -305,7 +345,11 @@ namespace CapriDesktop
                     }
                     if (asked != null)
                     {
+#if LINUX_CROSS
+                        Task<bool> sending = WinRtTask(asked);
+#else
                         Task<bool> sending = asked.AsTask();
+#endif
                         if (sending.Wait(3000) && sending.Result) return true;
                     }
                 }

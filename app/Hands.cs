@@ -4929,7 +4929,7 @@ namespace CapriDesktop
             @"^(?:put|send)\s+" + Machine + @"\s+to sleep$|^(?:sleep|hibernate)\s+" + Machine + @"$|^(?:make|let)\s+" + Machine + @"\s+(?:go to )?sleep$|^(?:отправь в сон|усыпи|в сон|в спящий режим)\s*" + Machine + @"?$", "sleep",
             @"^lock\s+(?:" + Machine + @"|(?:(?:my|the|this)\s+)?(?:screen|desktop))$|^(?:заблокируй|залочь)\s+(?:" + Machine + @"|(?:(?:мой|этот)\s+)?(?:экран|комп|пк|рабочий стол))$", "lock",
             @"^(?:sign|log) me (?:out|off)$|^(?:sign|log) (?:out|off)(?: of)?\s+(?:" + Machine + @"|(?:my )?windows account)$|^(?:выйди из системы|разлогинься)$", "sign_out",
-            @"^(?:cancel|stop|abort|undo)\s+(?:the |that |my )?(?:shut ?down|restart|reboot|sleep|sign ?out|log ?out)$|^(?:don'?t|do not)\s+(?:shut ?down|turn off|restart|reboot)(?:\s+(?:it|" + Machine + "))?$|^(?:отмени|не выключай|стой|отмена)(?:\s+(?:выключение|" + Machine + "))?$", "cancel"
+            @"^(?:cancel|stop|abort|undo)\s+(?:the |that |my )?(?:shut ?down|restart|reboot|sleep|sign ?out|log ?out)$|^(?:don'?t|do not)\s+(?:shut ?down|turn off|restart|reboot)(?:\s+(?:it|" + Machine + @"))?$|^(?:отмени|не выключай|стой|отмена)(?:\s+(?:выключение|" + Machine + @"))?$", "cancel"
         };
         private static DateTime powered = DateTime.MinValue;
         private static System.Threading.Timer powerLater;

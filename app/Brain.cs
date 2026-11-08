@@ -4679,7 +4679,7 @@ namespace CapriDesktop
             {
                 try
                 {
-                    Assembly assembly = typeof(Said).Assembly;
+                    System.Reflection.Assembly assembly = typeof(Said).Assembly;
                     string resName = "Capri.Lines." + name + ".txt";
                     Stream stream = null;
                     foreach (string res in assembly.GetManifestResourceNames())

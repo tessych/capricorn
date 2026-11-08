@@ -85,7 +85,7 @@ namespace CapriDesktop
                 Task<bool> reading = Task.Run(delegate
                 {
                     StartupTaskState state = StartupTask.GetAsync(StartupId).AsTask().GetAwaiter().GetResult().State;
-                    return state == StartupTaskState.Enabled || state == StartupTaskState.EnabledByPolicy;
+                    return state == StartupTaskState.Enabled || (int)state == 4;
                 });
                 return reading.Wait(Patience) && reading.Result;
             }
@@ -102,7 +102,7 @@ namespace CapriDesktop
                     StartupTask task = StartupTask.GetAsync(StartupId).AsTask().GetAwaiter().GetResult();
                     if (!on) { task.Disable(); return null; }
                     StartupTaskState state = task.RequestEnableAsync().AsTask().GetAwaiter().GetResult();
-                    return state == StartupTaskState.Enabled || state == StartupTaskState.EnabledByPolicy ? null : state == StartupTaskState.DisabledByUser ? StartupRefused : StartupStuck;
+                    return state == StartupTaskState.Enabled || (int)state == 4 ? null : state == StartupTaskState.DisabledByUser ? StartupRefused : StartupStuck;
                 });
                 return changing.Wait(Patience) ? changing.Result : StartupStuck;
             }
