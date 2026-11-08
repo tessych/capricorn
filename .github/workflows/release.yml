@@ -1,0 +1,56 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Capri Windows Executables
+        shell: powershell
+        run: |
+          ./ci/build-windows.ps1 -SmokeTest
+
+      - name: Create Zip Archive
+        shell: powershell
+        run: |
+          Compress-Archive -Path out/windows/Capri.exe, out/windows/Capri-Setup.exe -DestinationPath out/windows/Capri-Windows.zip -Force
+
+      - name: Determine Tag
+        id: tag
+        shell: pwsh
+        run: |
+          if ("${{ github.event.inputs.tag_name }}" -ne "") {
+            echo "tag=${{ github.event.inputs.tag_name }}" >> $env:GITHUB_OUTPUT
+          } elseif ("${{ github.ref_type }}" -eq "tag") {
+            echo "tag=${{ github.ref_name }}" >> $env:GITHUB_OUTPUT
+          } else {
+            $date = Get-Date -Format "yyyyMMdd-HHmm"
+            echo "tag=v-$date" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Capri ${{ steps.tag.outputs.tag }}
+          files: |
+            out/windows/Capri.exe
+            out/windows/Capri-Setup.exe
+            out/windows/Capri-Windows.zip
+          generate_release_notes: true
