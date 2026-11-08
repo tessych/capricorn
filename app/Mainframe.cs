@@ -258,7 +258,7 @@ namespace CapriDesktop
         private float filled;
         private bool expanded = true;
         private bool loaded;
-        private bool syncing;
+        private bool syncing = true;
         internal bool Quitting;
         private readonly Key more;
         private readonly Key minimize;
@@ -383,6 +383,7 @@ namespace CapriDesktop
 
         internal Mainframe(Companion owner, Icon icon, string version)
         {
+            syncing = true;
             glide.Tick += delegate { if (pumpToken == null) Glide(); };
             WireSlide();
             heartbeat.Tick += delegate { Heartbeat(); };

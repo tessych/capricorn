@@ -552,7 +552,7 @@ namespace CapriDesktop
         // Where its lines are on screen while any show, for her game watching to paint out of what it sees.
         internal Rectangle Area { get { lock (spot) return area; } }
 
-        internal bool ClickThrough
+        internal new bool ClickThrough
         {
             get
             {

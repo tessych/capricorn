@@ -1361,7 +1361,8 @@ namespace CapriDesktop
     // "a sound confirmation when it's clipped and like a little popup in the top right or something kinda like a medal clip").
     internal sealed class ClipToast : Overlay
     {
-        internal const int Shown = 4000, Slide = 160, Fade = 320, Step = 16;
+        internal new const int Shown = 4000;
+        internal const int Slide = 160, Fade = 320, Step = 16;
         private static SoundPlayer chime;
         private readonly System.Windows.Forms.Timer ticks = new System.Windows.Forms.Timer();
         private Bitmap plate;

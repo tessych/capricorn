@@ -10477,19 +10477,22 @@ namespace CapriDesktop
 
         internal void ChooseTier(int tier)
         {
-            if (tier == preferences.Tier) return;
+            if (preferences == null || tier == preferences.Tier) return;
             if (AfterLine(delegate { ChooseTier(tier); })) return;
             ++cloudListing;
             ++providerListing;
-            brain.Cancel();
+            if (brain != null) brain.Cancel();
             ++asking;
             CloseTalk();
             preferences.Tier = tier;
             LoadProvider();
             Mirror();
             SavePreferences();
-            brain.Remote = TierCloud();
-            brain.Model = brain.Remote == null ? brain.Server == null ? null : preferences.ProviderModel : brain.Remote.Model;
+            if (brain != null)
+            {
+                brain.Remote = TierCloud();
+                brain.Model = brain.Remote == null ? brain.Server == null ? null : preferences.ProviderModel : brain.Remote.Model;
+            }
             cloudModels = null;
             ShowTiers();
             FindBrain();
@@ -10899,7 +10902,12 @@ namespace CapriDesktop
         {
             get
             {
-                return voice.Busy || speaker.Busy || chatTail.Enabled || clock.Elapsed.TotalSeconds < voiceUntil || answerVoice == asking || hdSpeaking == asking;
+                return (voice != null && voice.Busy)
+                    || (speaker != null && speaker.Busy)
+                    || (chatTail != null && chatTail.Enabled)
+                    || (clock != null && clock.Elapsed.TotalSeconds < voiceUntil)
+                    || (answerVoice >= 0 && answerVoice == asking)
+                    || (hdSpeaking >= 0 && hdSpeaking == asking);
             }
         }
 
@@ -10907,12 +10915,13 @@ namespace CapriDesktop
 
         private bool AfterLine(Action change)
         {
+            if (change == null || voiceChanges == null) return false;
             if (!Voicing && (changingVoice || voiceChanges.Count == 0)) return false;
             int turn = voiceOffTurn;
             voiceChanges.Enqueue(delegate
             {
                 bool held = keepVoiceOff, changing = changingVoice;
-                keepVoiceOff = held || preferences.Silent && turn != voiceOffTurn;
+                keepVoiceOff = held || (preferences != null && preferences.Silent) && turn != voiceOffTurn;
                 changingVoice = true;
                 try { change(); }
                 finally { keepVoiceOff = held; changingVoice = changing; }

@@ -879,12 +879,12 @@ namespace CapriDesktop
         }
 
         // The icon's box and the label's letters in one half, 1 the pencil's and 2 the wave's, the pair in the middle of it.
-        internal static Rectangle[] Layout(float s, int part, string label)
+        internal static new Rectangle[] Layout(float s, int part, string label)
         {
             using (Font font = LabelFont(s, label)) return Layout(s, part, Ink(font, label));
         }
 
-        private static Rectangle[] Layout(float s, int part, Rectangle ink)
+        private static new Rectangle[] Layout(float s, int part, Rectangle ink)
         {
             Rectangle body = Body(s);
             int mid = Measure(s).Width / 2;

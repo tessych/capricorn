@@ -537,7 +537,7 @@ namespace CapriDesktop
 
         internal double Share { get { double spent = clock.Elapsed.TotalSeconds - dockedAt; return spent <= 0 ? 0 : busy.Elapsed.TotalSeconds / spent; } }
 
-        internal bool ClickThrough
+        internal new bool ClickThrough
         {
             get
             {
