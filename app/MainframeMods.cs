@@ -27,49 +27,49 @@ namespace CapriDesktop
         {
             ModAsk = AskToRun;
             int first = Controls.Count;
-            Section("MODS >", 0, 58);
-            Caption("Code mods can reach your whole PC. Only trusted ones.", 28, 80, Look.Mono(8.5f, FontStyle.Italic, GraphicsUnit.Point), Faint);
-            Key import = Make("Import mod", 28, 104, 100, 28, delegate { ImportMod(); });
+            Section("МОДЫ >", 0, 58);
+            Caption("Моды имеют доступ ко всему ПК. Используй только проверенные.", 28, 80, Look.Mono(8.5f, FontStyle.Italic, GraphicsUnit.Point), Faint);
+            Key import = Make("Импорт мода", 28, 104, 100, 28, delegate { ImportMod(); });
             import.Accent = Cyan;
             import.Loud = true;
-            modBrowse = Make("Browse mods", 134, 104, 100, 28, delegate { BrowseMods(); });
-            Key folder = Make("Mods folder", 240, 104, 116, 28, delegate { OpenModsFolder(); });
+            modBrowse = Make("Каталог", 134, 104, 100, 28, delegate { BrowseMods(); });
+            Key folder = Make("Папка модов", 240, 104, 116, 28, delegate { OpenModsFolder(); });
             Explain(import, "Import mod", "MainframeMods.cs");
             Explain(modBrowse, "Browse mods", "MainframeMods.cs");
             Explain(folder, "Open mods folder", "MainframeMods.cs");
             modStatus = ModLabel("", 28, 138, 328, 36, Font, Faint);
             // A long import error, like a compiler's, is cut to two lines here, and hovering it shows the whole thing.
             ((Note)modStatus).Hovers = true;
-            modListHead = Section("INSTALLED >", 0, 180);
-            modEmpty = ModLabel("No mods yet. Import a " + Mods.Extension + " file.", 28, ModRowTop, 328, 20, Font, Faint);
+            modListHead = Section("УСТАНОВЛЕННЫЕ >", 0, 180);
+            modEmpty = ModLabel("Нет модов. Импортируй файл " + Mods.Extension + ".", 28, ModRowTop, 328, 20, Font, Faint);
             for (int i = 0; i < ModRows; i++)
             {
                 int row = i, top = ModRowTop + ModRowHeight * i;
                 modNames[i] = ModLabel("", 28, top + 3, 196, 20, Type(10f, true), White);
-                modSwitches[i] = Make("On", 230, top, 54, 22, delegate { SwitchMod(row); });
-                modRemoves[i] = Make("Remove", 290, top, 66, 22, delegate { RemoveMod(row); });
+                modSwitches[i] = Make("Вкл", 230, top, 54, 22, delegate { SwitchMod(row); });
+                modRemoves[i] = Make("Удалить", 290, top, 66, 22, delegate { RemoveMod(row); });
                 modAbouts[i] = ModLabel("", 28, top + 26, 256, 30, Look.Mono(8.5f, FontStyle.Regular, GraphicsUnit.Point), Faint);
                 Explain(modSwitches[i], "Mod switch", "MainframeMods.cs", null, "On / Off");
                 Explain(modRemoves[i], "Remove", "MainframeMods.cs");
-                modPublishes[i] = Make("Publish", 290, top + 28, 66, 22, delegate { PublishMod(row); });
+                modPublishes[i] = Make("Публикация", 290, top + 28, 66, 22, delegate { PublishMod(row); });
                 Explain(modPublishes[i], "Publish mod", "MainframeMods.cs");
             }
-            modBack = Make("Back", 28, ModRowTop + ModRowHeight * ModRows, 60, 22, delegate { modFirst -= ModRows; FillMods(); });
+            modBack = Make("< Назад", 28, ModRowTop + ModRowHeight * ModRows, 60, 22, delegate { modFirst -= ModRows; FillMods(); });
             modPage = ModLabel("", 96, ModRowTop + ModRowHeight * ModRows + 3, 192, 18, Font, Faint);
             modPage.TextAlign = ContentAlignment.MiddleCenter;
             Explain(modBack, "Mod pages", "MainframeMods.cs");
-            modNext = Make("Next", 296, ModRowTop + ModRowHeight * ModRows, 60, 22, delegate { modFirst += ModRows; FillMods(); });
+            modNext = Make("Вперёд >", 296, ModRowTop + ModRowHeight * ModRows, 60, 22, delegate { modFirst += ModRows; FillMods(); });
             Explain(modNext, "Mod pages", "MainframeMods.cs");
-            Section("COLORS >", 0, ModRowTop + ModRowHeight * ModRows + 30);
+            Section("ЦВЕТА >", 0, ModRowTop + ModRowHeight * ModRows + 30);
             int colourRow = ModRowTop + ModRowHeight * ModRows + 54;
             for (int i = 0; i < ArtColors.Slots; i++)
             {
                 int slot = i;
-                colourKeys[i] = Make(ArtColors.Names[i], 28 + i * 66, colourRow, 62, 26, delegate { PickColour(slot); });
+                colourKeys[i] = Make(ArtColors.NamesRu[i], 28 + i * 66, colourRow, 62, 26, delegate { PickColour(slot); });
                 colourKeys[i].AccessibleName = "Change her " + ArtColors.Names[i].ToLowerInvariant() + " color";
                 Explain(colourKeys[i], "Her colors", "MainframeMods.cs", null, "Her colors");
             }
-            Key colourReset = Make("Reset colors", 28, colourRow + 32, 160, 24, delegate { ResetColours(); });
+            Key colourReset = Make("Сбросить цвета", 28, colourRow + 32, 160, 24, delegate { ResetColours(); });
             Explain(colourReset, "Reset colors", "MainframeMods.cs");
             for (int i = first; i < Controls.Count; i++)
             {
@@ -93,7 +93,7 @@ namespace CapriDesktop
 
         private void CheckModsKey()
         {
-            if (more.Left != Scaled(146) || more.Text != "Settings" || modsKey.Top != more.Top || modsKey.Left < more.Right || modsKey.Right > minimize.Left) throw new Exception("Settings or Mods is in the wrong place.");
+            if (more.Left != Scaled(146) || (more.Text != "Settings" && more.Text != "Настройки") || modsKey.Top != more.Top || modsKey.Left < more.Right || modsKey.Right > minimize.Left) throw new Exception("Settings or Mods is in the wrong place.");
             try
             {
                 foreach (bool fallback in new[] { false, true })
@@ -106,9 +106,9 @@ namespace CapriDesktop
                         if (crowded != null) throw new Exception("The Mods page or key overlaps" + (fallback ? " on the fallback font: " : ": ") + crowded);
                     }
                     ShowSettings(false);
-                    if (more.Text != "Back") throw new Exception("Settings lost Back while Mods was open.");
+                    if (more.Text != "Back" && more.Text != "< Назад" && more.Text != "Назад") throw new Exception("Settings lost Back while Mods was open.");
                     more.PerformClick();
-                    if (modded || paged || more.Text != "Settings") throw new Exception("Back did not leave Mods.");
+                    if (modded || paged || (more.Text != "Settings" && more.Text != "Настройки")) throw new Exception("Back did not leave Mods.");
                 }
             }
             finally { LayoutScale(0, 0); ShowMods(false); }
@@ -119,7 +119,7 @@ namespace CapriDesktop
             DismissHint();
             if (on && paged) ShowSettings(false);
             modded = on;
-            more.Text = on ? "Back" : "Settings";
+            more.Text = on ? "< Назад" : "Настройки";
             more.Invalidate();
             Place();
             foreach (KeyValuePair<Control, int> entry in mainLeft) Reachable(entry.Key, !on);
@@ -315,7 +315,7 @@ namespace CapriDesktop
             foreach (Mod old in mods.All.ToArray()) mods.Remove(old);
             if (Hands.HeardName("Nova, what time is it?") || !Hands.HeardName("Capri, what time is it?")) throw new Exception("Her names were wrong before any mod.");
             ShowMods(true);
-            if (!modded || more.Text != "Back" || modStatus.Left >= Far || modsKey.Left >= Far) throw new Exception("The Mods page did not open.");
+            if (!modded || (more.Text != "Back" && more.Text != "< Назад" && more.Text != "Назад") || modStatus.Left >= Far || modsKey.Left >= Far) throw new Exception("The Mods page did not open.");
             if (!ImportMod(good)) throw new Exception("A good mod was refused: " + modStatus.Text);
             if (mods.All.Count != 1 || !File.Exists(Path.Combine(mods.Folder, "custom-names" + Mods.Extension))) throw new Exception("An imported mod was not saved.");
             if (!Hands.HeardName("hey nova, what time is it") || !Hands.HeardName("BIG Z open notepad") || !Hands.HeardName("big   z") || !Hands.HeardName("ask capricorn") || !Hands.HeardName("Capri, hello"))

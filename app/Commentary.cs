@@ -45,6 +45,7 @@ namespace CapriDesktop
         internal const int Events = 1;
         internal const int Chatty = 2;
         internal static readonly string[] PaceNames = { "Off", "Events only", "Chatty" };
+        internal static readonly string[] PaceNamesRu = { "Выкл", "Только события", "Разговорчивая" };
         internal static volatile int Pace;
         internal static IGameStage Stage = new NoStage();
         // Her side of it: the game in front, or null; whether she's free to talk; her fastest eyes; her voice; a look at the screen.

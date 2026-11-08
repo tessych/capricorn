@@ -10,6 +10,7 @@ namespace CapriDesktop
     {
         internal const long Away = 600000;
         internal static readonly string[] Names = { "Water", "Stretch", "Look away", "Sleep nudge", "Meals", "Game break", "Bored" };
+        internal static readonly string[] NamesRu = { "Вода", "Разминка", "Отдых для глаз", "Напоминание о сне", "Приём пищи", "Перерыв в игре", "Скука" };
         private readonly Func<double> seconds;
         private readonly Func<DateTime> local;
         private readonly Func<CareKind, string> words;

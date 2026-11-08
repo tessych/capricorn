@@ -58,6 +58,7 @@ namespace CapriDesktop
 
         internal const string EarsUndownloaded = "Her ears didn't download: ";
         internal static readonly string[] Choices = { "Auto", "Her own ears", "Windows speech" };
+        internal static readonly string[] ChoicesRu = { "Авто", "Свой слух", "Служба Windows" };
         // VB-CABLE's input as Windows' default speakers sends every app's sound into the cable, where nobody hears it, and its
         // setup can leave it that way (Neco Arc, 3 Nov: "I stop hear everything else"). Voicemeeter's input is meant to be the
         // default, and Steam's is only while it streams, so only VB-Audio's cables count.

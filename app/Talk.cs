@@ -3100,7 +3100,7 @@ namespace CapriDesktop
 
         internal TypeBox()
         {
-            Text = "Talk to Capri";
+            Text = "Общение с Капри";
             FormBorderStyle = FormBorderStyle.None;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
@@ -3109,7 +3109,7 @@ namespace CapriDesktop
             BackColor = Neon.Well;
             DoubleBuffered = true;
             prompt = new Label();
-            prompt.Text = "YOU";
+            prompt.Text = "ВЫ";
             prompt.ForeColor = Neon.Rose;
             prompt.BackColor = Neon.Well;
             prompt.AutoSize = true;
@@ -3121,7 +3121,7 @@ namespace CapriDesktop
             // No limit, so her brain reads a long request whole.
             input.MaxLength = 0;
             input.AccessibleName = Text;
-            input.HandleCreated += delegate { Native.SendMessage(input.Handle, 0x1501, new IntPtr(1), "Say something to Capri"); };
+            input.HandleCreated += delegate { Native.SendMessage(input.Handle, 0x1501, new IntPtr(1), "Скажи что-нибудь Капри..."); };
             input.KeyDown += delegate(object sender, KeyEventArgs key)
             {
                 if (key.KeyCode == Keys.Enter) { key.SuppressKeyPress = true; Submit(); }
@@ -3129,7 +3129,7 @@ namespace CapriDesktop
             };
             Controls.Add(prompt);
             Controls.Add(input);
-            callMode = new Button { FlatStyle = FlatStyle.Flat, BackColor = Neon.Well, ForeColor = Neon.Cyan, Text = "Call mode (beta): off", AccessibleName = "Call mode beta; say Capri to ask. Friend asks need your confirmation when enabled", TabIndex = 1 };
+            callMode = new Button { FlatStyle = FlatStyle.Flat, BackColor = Neon.Well, ForeColor = Neon.Cyan, Text = "Режим звонка (бета): выкл", AccessibleName = "Режим звонка (бета)", TabIndex = 1 };
             callMode.FlatAppearance.BorderColor = Neon.Edge;
             callMode.Click += delegate { if (CallModeChanged != null) CallModeChanged(); };
             callNote = new Label { Text = CallSession.Reminder, ForeColor = Neon.White, BackColor = Neon.Well, UseMnemonic = false, Visible = false };
@@ -3146,7 +3146,7 @@ namespace CapriDesktop
             set
             {
                 calling = value;
-                callMode.Text = value ? "Call mode (beta): on" : "Call mode (beta): off";
+                callMode.Text = value ? "Режим звонка (бета): вкл" : "Режим звонка (бета): выкл";
                 callNote.Visible = value;
                 if (typed != null)
                 {

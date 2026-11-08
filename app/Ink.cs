@@ -528,7 +528,7 @@ namespace CapriDesktop
             Hands.Draw = DrawTool;
             Ink.Active = delegate { return ink.Has; };
             Computer.InkWord = ink.IsWord;
-            clearInkItem = new ToolStripMenuItem("Clear her drawing", null, delegate { ink.Clear(); clearInkItem.Visible = false; });
+            clearInkItem = new ToolStripMenuItem("Очистить рисунок", null, delegate { ink.Clear(); clearInkItem.Visible = false; });
             clearInkItem.Visible = false;
             menu.Items.Insert(menu.Items.Count - 1, clearInkItem);
             ink.Failed = delegate(string reason) { clearInkItem.Visible = false; Say(reason); };

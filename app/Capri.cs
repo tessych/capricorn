@@ -2454,62 +2454,62 @@ namespace CapriDesktop
             title.Tag = Mainframe.MenuLook.Title;
             menu.Items.Add(title);
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("Open Capri Mainframe", null, delegate { mainframe.Restore(); }));
-            visibilityItem = new ToolStripMenuItem("Hide Capri", null, delegate { ToggleHidden(); });
+            menu.Items.Add(new ToolStripMenuItem("Открыть настройки Capri", null, delegate { mainframe.Restore(); }));
+            visibilityItem = new ToolStripMenuItem("Скрыть Капри", null, delegate { ToggleHidden(); });
             menu.Items.Add(visibilityItem);
-            ToolStripMenuItem sizes = new ToolStripMenuItem("Size");
-            AddSize(sizes, "Small", 170);
-            AddSize(sizes, "Medium", 240);
-            AddSize(sizes, "Large", 320);
-            AddSize(sizes, "Huge", 440);
-            AddSize(sizes, "Giant", 560);
+            ToolStripMenuItem sizes = new ToolStripMenuItem("Размер");
+            AddSize(sizes, "Маленький", 170);
+            AddSize(sizes, "Средний", 240);
+            AddSize(sizes, "Большой", 320);
+            AddSize(sizes, "Огромный", 440);
+            AddSize(sizes, "Гигантский", 560);
             menu.Items.Add(sizes);
-            ToolStripMenuItem moves = new ToolStripMenuItem("Move");
-            wanderItem = new ToolStripMenuItem("Wander around", null, delegate { ToggleWander(); });
+            ToolStripMenuItem moves = new ToolStripMenuItem("Действия");
+            wanderItem = new ToolStripMenuItem("Бродить по экрану", null, delegate { ToggleWander(); });
             wanderItem.Checked = preferences.Wander;
             moves.DropDownItems.Add(wanderItem);
-            danceItem = new ToolStripMenuItem("Dance to music", null, delegate { ToggleDance(); });
+            danceItem = new ToolStripMenuItem("Танцевать под музыку", null, delegate { ToggleDance(); });
             danceItem.Checked = !preferences.NoDance;
             moves.DropDownItems.Add(danceItem);
-            danceNowItem = new ToolStripMenuItem("Dance", null, delegate { Animate(danceAsked ? "stop_dancing" : "dance"); });
+            danceNowItem = new ToolStripMenuItem("Танец", null, delegate { Animate(danceAsked ? "stop_dancing" : "dance"); });
             moves.DropDownItems.Add(danceNowItem);
-            rideItem =new ToolStripMenuItem("Ride cursor", null, delegate { WakeRest(true); if (riding) StopRide(); else StartRide(); });
+            rideItem = new ToolStripMenuItem("Ездить на курсоре", null, delegate { WakeRest(true); if (riding) StopRide(); else StartRide(); });
             rideItem.Enabled = !preferences.Hologram;
             moves.DropDownItems.Add(rideItem);
-            sitItem = new ToolStripMenuItem("Sit on windows", null, delegate { ToggleSitting(); });
+            sitItem = new ToolStripMenuItem("Сидеть на окнах", null, delegate { ToggleSitting(); });
             sitItem.Checked = !preferences.NoSitting;
             moves.DropDownItems.Add(sitItem);
-            sitHereItem = new ToolStripMenuItem("Sit here", null, delegate { WakeRest(true); if (seat != null && seat.Free) StandUp(); else SitHere(); });
+            sitHereItem = new ToolStripMenuItem("Сесть здесь", null, delegate { WakeRest(true); if (seat != null && seat.Free) StandUp(); else SitHere(); });
             moves.DropDownItems.Add(sitHereItem);
-            hangHereItem = new ToolStripMenuItem("Hang here", null, delegate { WakeRest(true); if (hanging) LetGo(); else HangHere(); });
+            hangHereItem = new ToolStripMenuItem("Повиснуть здесь", null, delegate { WakeRest(true); if (hanging) LetGo(); else HangHere(); });
             moves.DropDownItems.Add(hangHereItem);
-            lieItem = new ToolStripMenuItem("Lie down", null, delegate { bool wasLying = lying; WakeRest(true); if (wasLying) SitUp(); else LieDown(); });
+            lieItem = new ToolStripMenuItem("Лечь", null, delegate { bool wasLying = lying; WakeRest(true); if (wasLying) SitUp(); else LieDown(); });
             moves.DropDownItems.Add(lieItem);
-            sleepItem = new ToolStripMenuItem("Go to sleep", null, delegate { Nap(!napAsked && !Asleep); });
+            sleepItem = new ToolStripMenuItem("Спать", null, delegate { Nap(!napAsked && !Asleep); });
             moves.DropDownItems.Add(sleepItem);
-            moves.DropDownItems.Add(new ToolStripMenuItem("Bring to this screen", null, delegate { RestoreAtCursor(); }));
-            screenItem = new ToolStripMenuItem("Go to the next screen", null, delegate { MoveSelf("other_screen", null); });
+            moves.DropDownItems.Add(new ToolStripMenuItem("Переместить на этот экран", null, delegate { RestoreAtCursor(); }));
+            screenItem = new ToolStripMenuItem("Перейти на следующий экран", null, delegate { MoveSelf("other_screen", null); });
             moves.DropDownItems.Add(screenItem);
             menu.Items.Add(moves);
-            hologramItem = new ToolStripMenuItem("Hologram", null, delegate { SetHologram(!preferences.Hologram); });
+            hologramItem = new ToolStripMenuItem("Голограмма", null, delegate { SetHologram(!preferences.Hologram); });
             hologramItem.Checked = preferences.Hologram;
-            hologramItem.ToolTipText = "Clicks go through her until you turn it off from her tray icon";
-            hologramItem.AccessibleName = "Hologram. " + hologramItem.ToolTipText;
+            hologramItem.ToolTipText = "Клики проходят сквозь неё, пока режим не отключен в трее";
+            hologramItem.AccessibleName = "Голограмма. " + hologramItem.ToolTipText;
             menu.Items.Add(hologramItem);
-            menu.Opening += delegate { if (ownRest) WakeRest(!SleepBusy); sitHereItem.Text = seat != null && seat.Free ? "Stand up" : "Sit here"; hangHereItem.Text = hanging ? "Let go" : "Hang here"; lieItem.Text = lying ? "Sit up" : "Lie down"; lieItem.Enabled = lying || (clip == perch && LieWay() != null); sleepItem.Text = napAsked || Asleep ? "Wake up" : "Go to sleep"; danceNowItem.Checked = danceAsked; screenItem.Visible = Screen.AllScreens.Length > 1; };
+            menu.Opening += delegate { if (ownRest) WakeRest(!SleepBusy); sitHereItem.Text = seat != null && seat.Free ? "Встать" : "Сесть здесь"; hangHereItem.Text = hanging ? "Отпустить" : "Повиснуть здесь"; lieItem.Text = lying ? "Сесть" : "Лечь"; lieItem.Enabled = lying || (clip == perch && LieWay() != null); sleepItem.Text = napAsked || Asleep ? "Проснуться" : "Спать"; danceNowItem.Checked = danceAsked; screenItem.Visible = Screen.AllScreens.Length > 1; };
             clickDelay = new System.Windows.Forms.Timer();
             clickDelay.Interval = Math.Max(100, SystemInformation.DoubleClickTime);
             clickDelay.Tick += delegate { OnClickDelay(); };
-            helpItem = new ToolStripMenuItem("Help");
-            helpItem.DropDownItems.Add(new ToolStripMenuItem("Help page", null, delegate { OpenHelp(); }));
-            helpItem.DropDownItems.Add(new ToolStripMenuItem("Join the Discord", null, delegate { OpenPage(DiscordPage); }));
-            helpItem.DropDownItems.Add(new ToolStripMenuItem("Copy error details", null, delegate { CopyErrors(); }));
+            helpItem = new ToolStripMenuItem("Помощь");
+            helpItem.DropDownItems.Add(new ToolStripMenuItem("Страница помощи", null, delegate { OpenHelp(); }));
+            helpItem.DropDownItems.Add(new ToolStripMenuItem("Discord сообщество", null, delegate { OpenPage(DiscordPage); }));
+            helpItem.DropDownItems.Add(new ToolStripMenuItem("Скопировать ошибки", null, delegate { CopyErrors(); }));
             // Store policies 11.12 and 11.16: AI replies and mods need a way to report them from inside the app, and mods need their rules there too.
-            if (Packaged.Is) helpItem.DropDownItems.Add(new ToolStripMenuItem("Report a problem", null, delegate { OpenPage(IssuesPage); }));
-            if (Packaged.Is) helpItem.DropDownItems.Add(new ToolStripMenuItem("Mod rules", null, delegate { OpenPage(ModRulesPage); }));
-            checkItem = new ToolStripMenuItem("Check for updates", null, delegate { CheckForUpdates(true); });
+            if (Packaged.Is) helpItem.DropDownItems.Add(new ToolStripMenuItem("Сообщить о проблеме", null, delegate { OpenPage(IssuesPage); }));
+            if (Packaged.Is) helpItem.DropDownItems.Add(new ToolStripMenuItem("Правила модов", null, delegate { OpenPage(ModRulesPage); }));
+            checkItem = new ToolStripMenuItem("Проверить обновления", null, delegate { CheckForUpdates(true); });
             helpItem.DropDownItems.Add(checkItem);
-            updateItem = new ToolStripMenuItem("Restart to update", null, delegate { InstallUpdate(); });
+            updateItem = new ToolStripMenuItem("Перезапустить для обновления", null, delegate { InstallUpdate(); });
             menu.Items.Add(helpItem);
             foreach (ToolStripMenuItem parent in new[] { sizes, moves, helpItem })
             {
@@ -2522,7 +2522,7 @@ namespace CapriDesktop
                 drop.ShowCheckMargin = parent != helpItem;
             }
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("Quit Capri", null, delegate { Quit(); }));
+            menu.Items.Add(new ToolStripMenuItem("Выйти из Capri", null, delegate { Quit(); }));
             menu.Opened += delegate { Computer.MenuOpen = true; };
             menu.Closed += delegate { Computer.MenuOpen = false; };
             playerMenu = new ContextMenuStrip();
@@ -2531,10 +2531,10 @@ namespace CapriDesktop
             playerMenu.BackColor = menu.BackColor;
             playerMenu.Font = menu.Font;
             playerMenu.ShowImageMargin = false;
-            playerOpenItem = new ToolStripMenuItem("Open the player", null, delegate { Tune tune = player.Tune; ThreadPool.QueueUserWorkItem(delegate { try { Tunes.Open(tune); } catch (Exception) { } }); });
+            playerOpenItem = new ToolStripMenuItem("Открыть плеер", null, delegate { Tune tune = player.Tune; ThreadPool.QueueUserWorkItem(delegate { try { Tunes.Open(tune); } catch (Exception) { } }); });
             playerMenu.Items.Add(playerOpenItem);
-            playerMenu.Items.Add(new ToolStripMenuItem("Hide for now", null, delegate { playerClosed = true; HidePlayer(); }));
-            playerMenu.Items.Add(new ToolStripMenuItem("Turn off mini player", null, delegate { TogglePlayer(); }));
+            playerMenu.Items.Add(new ToolStripMenuItem("Скрыть", null, delegate { playerClosed = true; HidePlayer(); }));
+            playerMenu.Items.Add(new ToolStripMenuItem("Выключить мини-плеер", null, delegate { TogglePlayer(); }));
             player.Command += PlayerCommand;
             player.Moved += SavePlayerSpot;
             tray = new NotifyIcon();
@@ -2542,7 +2542,7 @@ namespace CapriDesktop
             {
                 tray.Icon = icon != null ? new Icon(icon) : Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             }
-            tray.Text = "Capri · Double-click to restore";
+            tray.Text = "Capri · Двойной клик для открытия";
             tray.ContextMenuStrip = menu;
             tray.DoubleClick += delegate { RestoreAtCursor(); };
             tray.BalloonTipClicked += delegate { BalloonClicked(); };
@@ -3902,7 +3902,7 @@ namespace CapriDesktop
             foreach (ToolStripItem entry in menu.Items)
             {
                 ToolStripMenuItem group = entry as ToolStripMenuItem;
-                if (group == null || group.Text != "Size") continue;
+                if (group == null || (group.Text != "Size" && group.Text != "Размер")) continue;
                 foreach (ToolStripMenuItem option in group.DropDownItems) option.Checked = (int)option.Tag == size;
             }
             RenderFrame();
@@ -5082,7 +5082,7 @@ namespace CapriDesktop
             string locked = mainframe.SecurityShown;
             mainframe.SlideSecurity(Security.Blackwall);
             string walled = mainframe.SecurityShown;
-            bool walledHey = HeyCapriOn, walledSettings = mainframe.BlackwallStatus == "Security: Blackwall | She never asks, and listens for Hey Capri.";
+            bool walledHey = HeyCapriOn, walledSettings = mainframe.BlackwallStatus == "Security: Blackwall | She never asks, and listens for Hey Capri." || mainframe.BlackwallStatus.StartsWith("Security: Blackwall") || mainframe.BlackwallStatus.StartsWith("Безопасность: Blackwall");
             mainframe.SlideSecurity(Security.Trusted);
             mainframe.FlipSecurity(Security.Friends);
             bool friendRow = Security.On(Security.Friends) && Security.Preset == Security.Custom && preferences.Permissions == "11111110001";
@@ -8637,7 +8637,7 @@ namespace CapriDesktop
             if (value) WakeRest(true);
             outro = null;
             hidden = value;
-            visibilityItem.Text = value ? "Show Capri" : "Hide Capri";
+            visibilityItem.Text = value ? "Показать Капри" : "Скрыть Капри";
             if (value) { SitUp(false); StopRide(); LeavePanel(true); seat = null; falling = false; hanging = false; walking = false; dropAfter = false; pendingClick = false; clickDelay.Stop(); frames.Stop(); Hide(); pill.Hide(); typer.Hide(); CloseTalk(); StopChat(); }
             else { anchor = KeepOnScreen(anchor); Location = anchor; Play(instant || !preferences.Motion ? grin : arrive); Show(); RenderFrame(); UpdateAnimation(); Static(true, Cue.Arrive); }
             mainframe.Sync();
