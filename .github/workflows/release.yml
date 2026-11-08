@@ -24,7 +24,7 @@ jobs:
       - name: Build Capri Windows Executables
         shell: powershell
         run: |
-          ./ci/build-windows.ps1 -SmokeTest
+          ./ci/build-windows.ps1
 
       - name: Create Zip Archive
         shell: powershell
