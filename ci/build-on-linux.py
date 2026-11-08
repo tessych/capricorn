@@ -2,20 +2,82 @@ import os
 import glob
 import subprocess
 import sys
+import urllib.request
+import zipfile
+import io
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 out_dir = os.path.join(root, "out", "windows")
 os.makedirs(out_dir, exist_ok=True)
+
+cache_dir = os.path.expanduser("~/.cache/capri-build")
+os.makedirs(cache_dir, exist_ok=True)
+
+net48_dir = os.path.join(cache_dir, "net48", "build", ".NETFramework", "v4.8")
+facades_dir = os.path.join(net48_dir, "Facades")
+winmd_dir = os.path.join(cache_dir, "winmd")
+winmd_ref_dir = os.path.join(winmd_dir, "ref", "netstandard2.0")
+winrt_runtime_dir = os.path.join(cache_dir, "winrt_runtime")
+
+def ensure_deps():
+    if not os.path.exists(os.path.join(net48_dir, "mscorlib.dll")):
+        print("[Capri] Downloading .NET 4.8 reference assemblies...")
+        url = "https://api.nuget.org/v3-flatcontainer/microsoft.netframework.referenceassemblies.net48/1.0.3/microsoft.netframework.referenceassemblies.net48.1.0.3.nupkg"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp:
+            data = io.BytesIO(resp.read())
+        with zipfile.ZipFile(data) as zf:
+            zf.extractall(os.path.join(cache_dir, "net48"))
+
+    if not os.path.exists(os.path.join(winmd_dir, "Windows.winmd")):
+        print("[Capri] Downloading Windows 10 WinRT metadata...")
+        os.makedirs(winmd_dir, exist_ok=True)
+        url = "https://api.nuget.org/v3-flatcontainer/directwindowswinmd.net/10.0.15063/directwindowswinmd.net.10.0.15063.nupkg"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp:
+            data = io.BytesIO(resp.read())
+        with zipfile.ZipFile(data) as zf:
+            for item in zf.namelist():
+                if item.endswith("Windows.winmd"):
+                    with open(os.path.join(winmd_dir, "Windows.winmd"), "wb") as f:
+                        f.write(zf.read(item))
+
+    if not os.path.exists(os.path.join(winmd_ref_dir, "Windows.Foundation.UniversalApiContract.winmd")):
+        print("[Capri] Downloading Windows SDK Contracts...")
+        url = "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.contracts/10.0.19041.1/microsoft.windows.sdk.contracts.10.0.19041.1.nupkg"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp:
+            data = io.BytesIO(resp.read())
+        with zipfile.ZipFile(data) as zf:
+            for item in zf.namelist():
+                if item.startswith("ref/netstandard2.0/"):
+                    target = os.path.join(winmd_dir, item)
+                    os.makedirs(os.path.dirname(target), exist_ok=True)
+                    with open(target, "wb") as f:
+                        f.write(zf.read(item))
+
+    if not os.path.exists(os.path.join(winrt_runtime_dir, "System.Runtime.WindowsRuntime.dll")):
+        print("[Capri] Downloading System.Runtime.WindowsRuntime...")
+        os.makedirs(winrt_runtime_dir, exist_ok=True)
+        for pkg in ["system.runtime.windowsruntime", "system.runtime.interopservices.windowsruntime"]:
+            url = f"https://api.nuget.org/v3-flatcontainer/{pkg}/4.3.0/{pkg}.4.3.0.nupkg" if "interop" in pkg else f"https://api.nuget.org/v3-flatcontainer/{pkg}/4.6.0/{pkg}.4.6.0.nupkg"
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req) as resp:
+                data = io.BytesIO(resp.read())
+            with zipfile.ZipFile(data) as zf:
+                for item in zf.namelist():
+                    if item.startswith("ref/netstandard2.0/") or item.startswith("ref/netstandard1.3/"):
+                        target = os.path.join(winrt_runtime_dir, os.path.basename(item))
+                        with open(target, "wb") as f:
+                            f.write(zf.read(item))
+
+ensure_deps()
 
 app_exe = os.path.join(out_dir, "Capri.exe")
 setup_exe = os.path.join(out_dir, "Capri-Setup.exe")
 icon_ico = os.path.join(root, "assets", "chip.ico")
 icon_png = os.path.join(root, "assets", "chip.png")
 manifest = os.path.join(root, "app", "app.manifest")
-
-net48_dir = "/tmp/net48/build/.NETFramework/v4.8"
-facades_dir = os.path.join(net48_dir, "Facades")
-winmd_dir = "/tmp/winmd/ref/netstandard2.0"
 
 shared = [
     "csc",
@@ -37,9 +99,9 @@ shared = [
 ]
 
 winmd_refs = [
-    f"/reference:/tmp/winmd/Windows.winmd",
-    f"/reference:UAC={os.path.join(winmd_dir, 'Windows.Foundation.UniversalApiContract.winmd')}",
-    f"/reference:FC={os.path.join(winmd_dir, 'Windows.Foundation.FoundationContract.winmd')}",
+    f"/reference:{os.path.join(winmd_dir, 'Windows.winmd')}",
+    f"/reference:UAC={os.path.join(winmd_ref_dir, 'Windows.Foundation.UniversalApiContract.winmd')}",
+    f"/reference:FC={os.path.join(winmd_ref_dir, 'Windows.Foundation.FoundationContract.winmd')}",
 ]
 
 references = [
@@ -54,7 +116,7 @@ references = [
 ] + winmd_refs + [
     f"/reference:{os.path.join(facades_dir, 'netstandard.dll')}",
     f"/reference:{os.path.join(facades_dir, 'System.Runtime.dll')}",
-    f"/reference:{os.path.join(facades_dir, 'System.Runtime.WindowsRuntime.dll')}",
+    f"/reference:{os.path.join(winrt_runtime_dir, 'System.Runtime.WindowsRuntime.dll')}",
     f"/reference:{os.path.join(facades_dir, 'System.Runtime.InteropServices.WindowsRuntime.dll')}",
 ]
 

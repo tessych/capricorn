@@ -450,8 +450,6 @@ namespace CapriDesktop
             }
             setup.Visible = false;
             hint.Visible = false;
-            freeKey.Visible = false;
-            planKey.Visible = false;
             rungs[0].Visible = false;
             rungs[1].Visible = false;
             rungs[2].Text = "DEEPSEEK";
@@ -472,6 +470,7 @@ namespace CapriDesktop
             freeKey = Make("Free key", 266, 209, 90, 22, delegate { ShowFreeKeys(); });
             freeKey.Chevron = true;
             freeKey.AccessibleName = "Free key: NVIDIA, Google AI Studio (Gemini) or OpenRouter";
+            freeKey.Visible = false;
             // Their own Claude or ChatGPT plan in place of a key, through Claude Code or Codex on this PC (Lachy, 6 Nov).
             planMenu = Dropdown();
             planMenu.AccessibleName = "Your plan";
@@ -486,6 +485,7 @@ namespace CapriDesktop
             planKey = Make("My plan", 266, 233, 90, 22, delegate { ShowPlans(); });
             planKey.Chevron = true;
             planKey.AccessibleName = "My plan: Claude through Claude Code, or ChatGPT through Codex";
+            planKey.Visible = false;
             textEntry = Input(28, 262, 244);
             textEntry.Box.UseSystemPasswordChar = true;
             textEntry.Box.AccessibleName = "NVIDIA, Google AI Studio (Gemini) or OpenRouter API key";
